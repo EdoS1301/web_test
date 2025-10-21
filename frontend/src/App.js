@@ -1,28 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import LoginPage from './components/LoginPage';
 import MainPage from './components/MainPage';
 import QuizPage from './components/QuizPage';
 
 function App() {
-  const [data, setData] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setTimeout(() => {
-      setData({
-        status: "Online",
-        message: "Система защиты активна"
-      });
-      setLoading(false);
-    }, 1000);
+    // Проверяем, авторизован ли пользователь
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
+    if (token && userData) {
+      setUser(JSON.parse(userData));
+    }
+    setLoading(false);
   }, []);
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+  };
 
   if (loading) {
     return (
       <div className="loading">
         <div className="spinner"></div>
-        <p>Загрузка информации о фишинге...</p>
+        <p>Загрузка...</p>
       </div>
     );
   }
@@ -30,39 +38,23 @@ function App() {
   return (
     <Router>
       <div className="app">
-        <Header />
         <Routes>
-          <Route path="/" element={<MainPage />} />
-          <Route path="/quiz" element={<QuizPage />} />
+          <Route 
+            path="/" 
+            element={user ? <Navigate to="/main" /> : <LoginPage />} 
+          />
+          <Route 
+            path="/main" 
+            element={user ? <MainPage user={user} logout={logout} /> : <Navigate to="/" />} 
+          />
+          <Route 
+            path="/quiz" 
+            element={user ? <QuizPage user={user} /> : <Navigate to="/" />} 
+          />
         </Routes>
-        <Footer data={data} />
       </div>
     </Router>
   );
 }
-
-const Header = () => (
-  <header className="header">
-    <div className="container">
-      <div className="header-content">
-        <h1>Фишинг: Примеры атак и защита</h1>
-        <p>Полное руководство по распознаванию и противодействию фишинговым атакам</p>
-        <nav className="navigation">
-          <Link to="/" className="nav-link">Главная</Link>
-          <Link to="/quiz" className="nav-link">Пройти тест</Link>
-        </nav>
-      </div>
-    </div>
-  </header>
-);
-
-const Footer = ({ data }) => (
-  <footer className="footer">
-    <div className="container">
-      <p>© 2025 Руководство по противодействию фишингу</p>
-      <p>Статус системы: <span className="api-status">{data?.status} - {data?.message}</span></p>
-    </div>
-  </footer>
-);
 
 export default App;

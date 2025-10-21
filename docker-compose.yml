@@ -7,11 +7,10 @@ services:
       - db
     volumes:
       - static_volume:/app/staticfiles
-      - react_volume:/app/staticfiles/frontend
     ports:
       - "8000:8000"
     command: >
-      sh -c "python manage.py makemigrations &&
+      sh -c "python manage.py makemigrations api &&
              python manage.py migrate &&
              python manage.py collectstatic --noinput &&
              gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 3"
@@ -34,7 +33,6 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - static_volume:/app/staticfiles:ro
-      - react_volume:/app/staticfiles/frontend:ro
     depends_on:
       - web
     restart: unless-stopped
@@ -42,4 +40,3 @@ services:
 volumes:
   postgres_data:
   static_volume:
-  react_volume:

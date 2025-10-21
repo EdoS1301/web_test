@@ -22,10 +22,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ .
 
+# Копируем React build в правильную директорию
 COPY --from=frontend-builder /app/frontend/build /app/staticfiles/frontend/
 
-RUN mkdir -p staticfiles
+# Копируем скрипт создания суперпользователя
+COPY create_superuser.py .
+
+# Создаем директории для статики
+RUN mkdir -p staticfiles media
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
+CMD ["sh", "-c", "python manage.py makemigrations api && python manage.py migrate && python create_superuser.py && python manage.py collectstatic --noinput && gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 3"]

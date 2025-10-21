@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const QuizPage = () => {
+const QuizPage = ({ user }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
@@ -174,6 +174,33 @@ const QuizPage = () => {
     },
   ];
 
+  const handleSaveResult = async (score, totalQuestions, percentage) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/quiz/save/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          score: score,
+          total_questions: totalQuestions,
+          percentage: percentage
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Результат сохранен:', data);
+      } else {
+        console.error('Ошибка сохранения результата');
+      }
+    } catch (error) {
+      console.error('Ошибка сохранения результата:', error);
+    }
+  };
+
   const handleAnswerClick = (optionIndex) => {
     const newSelectedAnswers = {
       ...selectedAnswers,
@@ -190,6 +217,9 @@ const QuizPage = () => {
       setCurrentQuestion(nextQuestion);
     } else {
       setShowScore(true);
+      // Сохраняем результат после завершения теста
+      const percentage = Math.round((score / questions.length) * 100);
+      handleSaveResult(score, questions.length, percentage);
     }
   };
 
@@ -218,7 +248,7 @@ const QuizPage = () => {
               {percentage >= 90 ? (
                 <div className="result-message success">
                   <h3>🎉 Отлично!</h3>
-                  <p>Поздравляю, вы успешно прошли тест</p>
+                  <p>Вы эксперт в области защиты от фишинга!</p>
                 </div>
               ) : percentage >= 70 ? (
                 <div className="result-message success">

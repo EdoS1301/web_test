@@ -1,6 +1,31 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+const Header = ({ user, logout }) => (
+  <header className="header">
+    <div className="container">
+      <div className="header-content">
+        <h1>Фишинг: Примеры атак и защита</h1>
+        <p>Полное руководство по распознаванию и противодействию фишинговым атакам</p>
+        
+        <div className="user-profile">
+          <div className="user-info">
+            <div className="user-name">{user.full_name}</div>
+            <div className="user-department">{user.department}, {user.organization}</div>
+          </div>
+          <button onClick={logout} className="logout-btn">Выйти</button>
+        </div>
+
+        <nav className="navigation">
+          <Link to="/main" className="nav-link">Главная</Link>
+          <Link to="/quiz" className="nav-link">Пройти тест</Link>
+        </nav>
+      </div>
+    </div>
+  </header>
+);
+
+
 const MainPage = () => {
   return (
     <main className="main">
