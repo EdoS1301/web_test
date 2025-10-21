@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,7 +12,6 @@ const LoginPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -28,7 +26,6 @@ const LoginPage = () => {
     setLoading(true);
     setError('');
 
-    // Валидация
     if (!isLogin && !formData.privacy_policy) {
       setError('Необходимо согласие на обработку персональных данных');
       setLoading(false);
@@ -37,7 +34,6 @@ const LoginPage = () => {
 
     try {
       const url = isLogin ? '/api/login/' : '/api/register/';
-      console.log('Отправка запроса на:', url);
       
       const response = await fetch(url, {
         method: 'POST',
@@ -48,26 +44,23 @@ const LoginPage = () => {
       });
 
       const data = await response.json();
-      console.log('Ответ от сервера:', data);
 
-      if (response.ok) {
+      if (response.ok && data.token && data.user) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        console.log('Успешная авторизация, переход на /main');
-        navigate('/main');
+        
+        // Простое перенаправление
+        window.location.href = '/main';
+        
       } else {
-        setError(data.error || 'Произошла ошибка при авторизации');
+        setError(data.error || 'Ошибка авторизации');
       }
     } catch (err) {
-      console.error('Ошибка соединения:', err);
-      setError('Ошибка соединения с сервером. Проверьте, запущен ли бэкенд.');
+      setError('Ошибка соединения с сервером');
     } finally {
       setLoading(false);
     }
   };
-
-  // Если страница пустая, возможно проблема с CSS - добавим проверку
-  console.log('LoginPage render:', { isLogin, loading, error });
 
   return (
     <div className="login-container">

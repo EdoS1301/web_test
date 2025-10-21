@@ -15,7 +15,13 @@ function App() {
     const userData = localStorage.getItem('user');
     
     if (token && userData) {
-      setUser(JSON.parse(userData));
+      try {
+        setUser(JSON.parse(userData));
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
     setLoading(false);
   }, []);
@@ -41,15 +47,15 @@ function App() {
         <Routes>
           <Route 
             path="/" 
-            element={user ? <Navigate to="/main" /> : <LoginPage />} 
+            element={user ? <Navigate to="/main" replace /> : <LoginPage />} 
           />
           <Route 
             path="/main" 
-            element={user ? <MainPage user={user} logout={logout} /> : <Navigate to="/" />} 
+            element={user ? <MainPage user={user} logout={logout} /> : <Navigate to="/" replace />} 
           />
           <Route 
             path="/quiz" 
-            element={user ? <QuizPage user={user} /> : <Navigate to="/" />} 
+            element={user ? <QuizPage user={user} logout={logout} /> : <Navigate to="/" replace />} 
           />
         </Routes>
       </div>
