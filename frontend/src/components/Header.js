@@ -10,7 +10,7 @@ const Header = ({ user, logout }) => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      setIsScrolled(scrollTop > 100); // Начинаем скрывать после 100px скролла
+      setIsScrolled(scrollTop > 100);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -49,7 +49,7 @@ const Header = ({ user, logout }) => {
       <div className="container">
         <div className="header-content">
           <div className="header-left">
-            <h1>🛡️ Курс по противодействию фишингу</h1>
+            <h1>Курс по противодействию фишингу</h1>
           </div>
           
           <div className="header-right">
@@ -81,7 +81,7 @@ const Header = ({ user, logout }) => {
                     className="dropdown-item logout-btn"
                     onClick={handleLogout}
                   >
-                    🔄 Выйти и войти в другой аккаунт
+                    Выйти и войти в другой аккаунт
                   </button>
                 </div>
               )}
@@ -90,8 +90,8 @@ const Header = ({ user, logout }) => {
         </div>
 
         <nav className="navigation">
-          <Link to="/main" className="nav-link">📚 Теория</Link>
-          <Link to="/quiz" className="nav-link">🎯 Пройти тест</Link>
+          <Link to="/main" className="nav-link">Теория</Link>
+          <Link to="/quiz" className="nav-link">Пройти тест</Link>
         </nav>
       </div>
     </header>

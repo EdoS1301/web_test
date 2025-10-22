@@ -49,7 +49,6 @@ const LoginPage = () => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        // Простое перенаправление
         window.location.href = '/main';
         
       } else {
@@ -66,7 +65,7 @@ const LoginPage = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1>🛡️ Курс по фишингу</h1>
+          <h1>Курс по фишингу</h1>
           <p>Пройти обучение и тестирование по кибербезопасности</p>
         </div>
 
@@ -165,7 +164,9 @@ const LoginPage = () => {
                     required
                   />
                   <span className="checkmark"></span>
-                  Я согласен на обработку персональных данных
+                  <span>
+                    Я даю согласие на обработку моих персональных данных в соответствии с политикой конфиденциальности
+                  </span>
                 </label>
               </div>
             </>
@@ -181,20 +182,17 @@ const LoginPage = () => {
               onChange={handleChange}
               required
               placeholder="Введите пароль"
-              minLength="6"
               disabled={loading}
             />
           </div>
 
-          <button type="submit" disabled={loading} className="submit-btn">
-            {loading ? (
-              <>
-                <div className="spinner-small"></div>
-                Загрузка...
-              </>
-            ) : (
-              isLogin ? 'Войти' : 'Зарегистрироваться'
-            )}
+          <button 
+            type="submit" 
+            className="submit-btn"
+            disabled={loading}
+          >
+            {loading && <span className="spinner-small"></span>}
+            {isLogin ? 'Войти' : 'Зарегистрироваться'}
           </button>
         </form>
 
@@ -202,16 +200,9 @@ const LoginPage = () => {
           <p>
             {isLogin ? 'Нет аккаунта? ' : 'Уже есть аккаунт? '}
             <button 
-              type="button" 
-              className="link-btn"
-              onClick={() => {
-                setError('');
-                setIsLogin(!isLogin);
-                setFormData({
-                  ...formData,
-                  privacy_policy: false
-                });
-              }}
+              type="button"
+              className="link-btn" 
+              onClick={() => setIsLogin(!isLogin)}
               disabled={loading}
             >
               {isLogin ? 'Зарегистрироваться' : 'Войти'}
