@@ -1,0 +1,14 @@
+# Django
+DEBUG=True
+DJANGO_SECRET_KEY=уникальный_ключ
+ALLOWED_HOSTS=localhost,127.0.0.1,web,nginx
+
+# Database
+DB_NAME=myapp
+DB_USER=myuser
+DB_PASSWORD=mypassword
+DB_HOST=db
+DB_PORT=5432
+
+# React
+REACT_APP_API_URL=http://localhost:8000/api
