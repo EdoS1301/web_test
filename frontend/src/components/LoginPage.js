@@ -165,7 +165,25 @@ const LoginPage = () => {
                   />
                   <span className="checkmark"></span>
                   <span>
-                    Я даю согласие на обработку моих персональных данных в соответствии с политикой конфиденциальности
+                    Я даю согласие на обработку моих персональных данных в соответствии с{' '}
+                    <a 
+                      href="/privacy-policy" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{
+                        color: '#1a1a1a', 
+                        textDecoration: 'underline',
+                        fontWeight: '500'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (loading) {
+                          e.preventDefault();
+                        }
+                      }}
+                    >
+                      политикой конфиденциальности
+                    </a>
                   </span>
                 </label>
               </div>

@@ -30,6 +30,11 @@ const Header = ({ user, logout }) => {
     setShowDropdown(!showDropdown);
   };
 
+  const handleStatsClick = () => {
+    setShowDropdown(false);
+    navigate('/stats');
+  };
+
   // Закрываем dropdown при клике вне его
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -76,6 +81,13 @@ const Header = ({ user, logout }) => {
                     <div>{user.organization}</div>
                     <div className="user-email">{user.email}</div>
                   </div>
+                  <div className="dropdown-divider"></div>
+                  <button 
+                    className="dropdown-item"
+                    onClick={handleStatsClick}
+                  >
+                    📊 Моя статистика
+                  </button>
                   <div className="dropdown-divider"></div>
                   <button 
                     className="dropdown-item logout-btn"

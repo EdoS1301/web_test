@@ -1,16 +1,18 @@
+// frontend/src/App.js
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import LoginPage from './components/LoginPage';
 import MainPage from './components/MainPage';
 import QuizPage from './components/QuizPage';
+import StatsPage from './components/StatsPage';
+import PrivacyPolicy from './components/PrivacyPolicy';
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Проверяем, авторизован ли пользователь
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
     
@@ -56,6 +58,15 @@ function App() {
           <Route 
             path="/quiz" 
             element={user ? <QuizPage user={user} logout={logout} /> : <Navigate to="/" replace />} 
+          />
+          <Route 
+            path="/stats" 
+            element={user ? <StatsPage user={user} logout={logout} /> : <Navigate to="/" replace />} 
+          />
+          {/* Политика конфиденциальности доступна всем */}
+          <Route 
+            path="/privacy-policy" 
+            element={<PrivacyPolicy user={user} logout={logout} />} 
           />
         </Routes>
       </div>
