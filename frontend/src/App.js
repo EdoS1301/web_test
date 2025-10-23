@@ -1,4 +1,3 @@
-// frontend/src/App.js
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
@@ -7,6 +6,7 @@ import MainPage from './components/MainPage';
 import QuizPage from './components/QuizPage';
 import StatsPage from './components/StatsPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import PhishingExample from './components/PhishingExample';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -63,10 +63,13 @@ function App() {
             path="/stats" 
             element={user ? <StatsPage user={user} logout={logout} /> : <Navigate to="/" replace />} 
           />
-          {/* Политика конфиденциальности доступна всем */}
           <Route 
             path="/privacy-policy" 
             element={<PrivacyPolicy user={user} logout={logout} />} 
+          />
+          <Route 
+            path="/phishing-example" 
+            element={<PhishingExample />} 
           />
         </Routes>
       </div>
