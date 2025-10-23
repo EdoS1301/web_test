@@ -53,20 +53,23 @@ newgrp docker
 docker --version
 docker-compose --version
 
-git clone <repository-url>
+git clone <https://github.com/EdoS1301/web_test.git>
 cd phishing-course
 
-## Django
-DEBUG=False
-DJANGO_SECRET_KEY=your-secret-key-change-in-production
-ALLOWED_HOSTS=localhost,127.0.0.1,web,nginx,0.0.0.0
+## настройка env
+DEBUG=True
+DJANGO_SECRET_KEY=добавь уникальный_ключ
+ALLOWED_HOSTS=localhost,127.0.0.1,web,nginx
 
-## База данных
-DB_NAME=phishing_db
-DB_USER=postgres
-DB_PASSWORD=password
+DB_NAME=myapp
+DB_USER=myuser
+DB_PASSWORD=mypassword
 DB_HOST=db
 DB_PORT=5432
+
+REACT_APP_API_URL=http://localhost:8000/api
+
+
 
 ## Сборка и запуск всех контейнеров
 docker-compose up --build
@@ -92,14 +95,9 @@ docker-compose restart
 ## Создание суперпользователя Django
 docker-compose exec web python manage.py createsuperuser
 
-## Выполнение миграций базы данных
-docker-compose exec web python manage.py migrate
 
-## Сборка статических файлов
-docker-compose exec web python manage.py collectstatic --noinput
-
-## Остановка с сохранением данных
+### Остановка с сохранением данных
 docker-compose down
 
-## Полная остановка с удалением данных
+### Полная остановка с удалением данных (для разработки лучше так)
 docker-compose down -v
