@@ -1316,12 +1316,16 @@ body {
   background: white;
   padding: 3rem;
   border-radius: 20px;
-  margin: 2rem 0;
+  margin: 1rem auto;
   border: 1px solid #e5e5e5;
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+}
+
+.privacy-policy-page .main {
+  background: #f8f9fa;
+  min-height: 100vh;
+  padding-top: 1rem;
 }
 
 .policy-container h1 {
@@ -1388,4 +1392,73 @@ body {
 /* Стили для неавторизованных пользователей */
 .policy-container:not(:has(+ .header)) {
   margin-top: 4rem;
+}
+
+/* Стили для кнопки статистики */
+.dropdown-item.stats-btn {
+  position: relative;
+  padding: 10px 8px 10px 16px;
+  margin: 2px 12px;
+  font-size: 0.85rem;
+  width: calc(100% - 24px);
+  background: transparent;
+  border: none;
+  color: #1a1a1a;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.stats-text {
+  flex: 1;
+  font-weight: 600;
+  position: relative;
+  margin-left: -4px;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+/* Анимация приподнятия для текста статистики */
+.dropdown-item.stats-btn:hover .stats-text {
+  transform: translateY(-2px);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Анимация для иконки статистики */
+.stats-icon {
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  margin-right: 6px;
+  display: inline-block;
+}
+
+.dropdown-item.stats-btn:hover .stats-icon {
+  transform: translateY(-2px) scale(1.05);
+}
+
+/* Стили для кнопки выхода */
+.dropdown-item.logout-btn {
+  position: relative;
+  padding: 10px 8px 10px 16px;
+  margin: 2px 12px;
+  font-size: 0.85rem;
+  width: calc(100% - 24px);
+  background: transparent;
+  border: none;
+  color: #dc2626;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.logout-text {
+  position: relative;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+/* Анимация приподнятия для текста выхода */
+.dropdown-item.logout-btn:hover .logout-text {
+  transform: translateY(-2px);
+  text-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
 }

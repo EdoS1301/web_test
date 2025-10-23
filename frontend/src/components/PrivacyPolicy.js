@@ -1,5 +1,4 @@
 import React from 'react';
-import Header from './Header';
 
 const PrivacyPolicy = ({ user, logout }) => {
   const handleBack = () => {
@@ -8,7 +7,6 @@ const PrivacyPolicy = ({ user, logout }) => {
 
   return (
     <>
-      {user && <Header user={user} logout={logout} />}
       <main className="main" style={!user ? { marginTop: '0' } : {}}>
         <div className="container">
           <div className="policy-container">

@@ -83,17 +83,18 @@ const Header = ({ user, logout }) => {
                   </div>
                   <div className="dropdown-divider"></div>
                   <button 
-                    className="dropdown-item"
+                    className="dropdown-item stats-btn"
                     onClick={handleStatsClick}
                   >
-                    📊 Моя статистика
+                    <span className="stats-icon">📊</span>
+                    <span className="stats-text">Моя статистика</span>
                   </button>
                   <div className="dropdown-divider"></div>
                   <button 
                     className="dropdown-item logout-btn"
                     onClick={handleLogout}
                   >
-                    Выйти и войти в другой аккаунт
+                    <span className="logout-text">Выйти и войти в другой аккаунт</span>
                   </button>
                 </div>
               )}
