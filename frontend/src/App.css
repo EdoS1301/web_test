@@ -1462,3 +1462,63 @@ body {
   transform: translateY(-2px);
   text-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
 }
+
+/* Стили для формы согласия */
+.consent-container {
+  background: white;
+  padding: 3rem;
+  border-radius: 20px;
+  margin: 1rem auto;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  max-width: 900px;
+}
+
+.consent-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #1a1a1a;
+  padding-bottom: 1rem;
+}
+
+.consent-content h3 {
+  color: #1a1a1a;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.consent-content ul {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.consent-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.signature-block {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid #1a1a1a;
+}
+
+/* Стили для печати */
+@media print {
+  .consent-container {
+    box-shadow: none;
+    border: none;
+    padding: 0;
+  }
+  
+  .back-button, .cta-button {
+    display: none !important;
+  }
+  
+  .consent-content {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+}

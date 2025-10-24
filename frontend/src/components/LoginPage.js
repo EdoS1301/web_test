@@ -1,3 +1,4 @@
+// components/LoginPage.js
 import React, { useState } from 'react';
 
 const LoginPage = () => {
@@ -8,7 +9,8 @@ const LoginPage = () => {
     full_name: '',
     department: '',
     organization: '',
-    privacy_policy: false
+    privacy_policy: false,
+    pd_consent: false // НОВОЕ ПОЛЕ ДЛЯ ЯВНОГО СОГЛАСИЯ
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -26,10 +28,18 @@ const LoginPage = () => {
     setLoading(true);
     setError('');
 
-    if (!isLogin && !formData.privacy_policy) {
-      setError('Необходимо согласие на обработку персональных данных');
-      setLoading(false);
-      return;
+    // ПРОВЕРКА СОГЛАСИЯ ДЛЯ РЕГИСТРАЦИИ
+    if (!isLogin) {
+      if (!formData.privacy_policy) {
+        setError('Необходимо согласие на обработку персональных данных');
+        setLoading(false);
+        return;
+      }
+      if (!formData.pd_consent) {
+        setError('Необходимо дать согласие на обработку персональных данных');
+        setLoading(false);
+        return;
+      }
     }
 
     try {
@@ -153,6 +163,7 @@ const LoginPage = () => {
                 />
               </div>
 
+              {/* СТАРОЕ СОГЛАСИЕ НА ПОЛИТИКУ */}
               <div className="form-group checkbox-group">
                 <label className="checkbox-label">
                   <input
@@ -165,7 +176,7 @@ const LoginPage = () => {
                   />
                   <span className="checkmark"></span>
                   <span>
-                    Я даю согласие на обработку моих персональных данных в соответствии с{' '}
+                    Я ознакомлен(а) и согласен(на) с{' '}
                     <a 
                       href="/privacy-policy" 
                       target="_blank" 
@@ -182,8 +193,30 @@ const LoginPage = () => {
                         }
                       }}
                     >
-                      политикой конфиденциальности
+                      Политикой обработки персональных данных
                     </a>
+                  </span>
+                </label>
+              </div>
+
+              {/* НОВОЕ ЯВНОЕ СОГЛАСИЕ НА ОБРАБОТКУ ПДн */}
+              <div className="form-group checkbox-group">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="pd_consent"
+                    checked={formData.pd_consent}
+                    onChange={handleChange}
+                    disabled={loading}
+                    required
+                  />
+                  <span className="checkmark"></span>
+                  <span>
+                    <strong>Даю согласие на обработку моих персональных данных</strong><br />
+                    <span style={{fontSize: '0.85rem', color: '#666'}}>
+                      в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных» 
+                      для целей регистрации и прохождения обучения в системе
+                    </span>
                   </span>
                 </label>
               </div>

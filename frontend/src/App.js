@@ -1,3 +1,4 @@
+// App.js
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
@@ -6,6 +7,7 @@ import MainPage from './components/MainPage';
 import QuizPage from './components/QuizPage';
 import StatsPage from './components/StatsPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import ConsentForm from './components/ConsentForm'; // НОВЫЙ ИМПОРТ
 import PhishingExample from './components/PhishingExample';
 
 function App() {
@@ -66,6 +68,10 @@ function App() {
           <Route 
             path="/privacy-policy" 
             element={<PrivacyPolicy user={user} logout={logout} />} 
+          />
+          <Route 
+            path="/consent-form" 
+            element={<ConsentForm user={user} logout={logout} />} 
           />
           <Route 
             path="/phishing-example" 

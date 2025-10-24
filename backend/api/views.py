@@ -1,451 +1,628 @@
+# api/views.py
+import json
+import jwt
+from datetime import datetime, timedelta
+from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import json
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from .models import QuizResult, UserProfile
-import jwt
-import datetime
-from django.conf import settings
-import logging
+from django.db import IntegrityError
+from django.utils import timezone
+from .models import UserProfile, QuizResult, PDConsentLog
+from django.core.exceptions import ObjectDoesNotExist
 
-# Настройка логгера
-logger = logging.getLogger(__name__)
+# Генерация JWT токена
+def generate_token(user):
+    payload = {
+        'user_id': user.id,
+        'email': user.email,
+        'exp': datetime.utcnow() + timedelta(days=7),
+        'iat': datetime.utcnow()
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
-def get_secret_key():
-    return getattr(settings, 'SECRET_KEY', 'fallback-secret-key')
+# Валидация JWT токена
+def validate_token(token):
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
 
-def hello_world(request):
-    """Тестовая функция для проверки работы API"""
-    return JsonResponse({
-        'message': 'Django API is working!', 
-        'status': 'success',
-        'timestamp': datetime.datetime.now().isoformat()
-    })
+# Получение IP адреса клиента
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+# Получение пользователя из токена
+def get_user_from_token(request):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return None
+    
+    token = auth_header.split(' ')[1]
+    payload = validate_token(token)
+    
+    if not payload:
+        return None
+    
+    try:
+        user = User.objects.get(id=payload['user_id'])
+        return user
+    except User.DoesNotExist:
+        return None
 
 @csrf_exempt
+@require_http_methods(["GET"])
+def hello_world(request):
+    return JsonResponse({'message': 'Django API is working!', 'status': 'success'})
+
+@csrf_exempt
+@require_http_methods(["POST"])
 def register(request):
-    """
-    Регистрация нового пользователя
-    """
     if request.method == 'POST':
         try:
-            # Парсим JSON данные
-            try:
-                data = json.loads(request.body.decode('utf-8'))
-            except json.JSONDecodeError as e:
-                logger.error(f"Ошибка парсинга JSON: {e}")
+            data = json.loads(request.body)
+            
+            # Проверяем обязательные поля
+            required_fields = ['email', 'password', 'full_name', 'department', 'organization']
+            for field in required_fields:
+                if not data.get(field):
+                    return JsonResponse({
+                        'error': f'Необходимо заполнить поле: {field}'
+                    }, status=400)
+            
+            # Проверяем согласие на обработку ПДн
+            if not data.get('privacy_policy'):
                 return JsonResponse({
-                    'error': 'Неверный формат данных',
-                    'details': str(e)
+                    'error': 'Необходимо согласие с Политикой обработки персональных данных'
                 }, status=400)
-
-            logger.info(f"Регистрация пользователя: {data.get('email', 'No email')}")
-
-            # Валидация обязательных полей
-            required_fields = ['email', 'password']
-            if not all(field in data for field in required_fields):
+            
+            if not data.get('pd_consent'):
                 return JsonResponse({
-                    'error': 'Отсутствуют обязательные поля',
-                    'required': required_fields
+                    'error': 'Необходимо дать согласие на обработку персональных данных'
                 }, status=400)
-
-            email = data['email']
-            password = data['password']
-
+            
             # Проверяем, существует ли пользователь
-            if User.objects.filter(email=email).exists():
-                logger.warning(f"Попытка регистрации существующего email: {email}")
+            if User.objects.filter(username=data['email']).exists():
                 return JsonResponse({
                     'error': 'Пользователь с таким email уже существует'
                 }, status=400)
-
-            # Создаем пользователя
-            try:
-                user = User.objects.create_user(
-                    username=email,  # Используем email как username
-                    email=email,
-                    password=password,
-                    first_name=data.get('full_name', '').split(' ')[0] if data.get('full_name') else '',
-                    last_name=' '.join(data.get('full_name', '').split(' ')[1:]) if data.get('full_name') else ''
-                )
-                logger.info(f"Создан пользователь: {user.id}")
-            except Exception as e:
-                logger.error(f"Ошибка создания пользователя: {e}")
-                return JsonResponse({
-                    'error': 'Ошибка создания пользователя',
-                    'details': str(e)
-                }, status=400)
-
-            # Создаем профиль пользователя
-            try:
-                profile = UserProfile.objects.create(
-                    user=user,
-                    full_name=data.get('full_name', ''),
-                    department=data.get('department', ''),
-                    organization=data.get('organization', '')
-                )
-                logger.info(f"Создан профиль для пользователя: {user.id}")
-            except Exception as e:
-                # Если профиль не создался, удаляем пользователя
-                user.delete()
-                logger.error(f"Ошибка создания профиля: {e}")
-                return JsonResponse({
-                    'error': 'Ошибка создания профиля пользователя',
-                    'details': str(e)
-                }, status=400)
-
-            # Создаем JWT токен
-            try:
-                payload = {
-                    'user_id': user.id,
-                    'email': user.email,
-                    'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7)
-                }
-                token = jwt.encode(payload, get_secret_key(), algorithm='HS256')
-                
-                # Если token в bytes, конвертируем в string
-                if isinstance(token, bytes):
-                    token = token.decode('utf-8')
-                    
-            except Exception as e:
-                logger.error(f"Ошибка создания токена: {e}")
-                return JsonResponse({
-                    'error': 'Ошибка создания токена',
-                    'details': str(e)
-                }, status=400)
-
-            # Формируем успешный ответ
-            response_data = {
-                'message': 'Регистрация успешно завершена',
-                'token': token,
-                'user': {
-                    'id': user.id,
-                    'email': user.email,
-                    'full_name': profile.full_name,
-                    'department': profile.department,
-                    'organization': profile.organization
-                },
-                'timestamp': datetime.datetime.now().isoformat()
-            }
-
-            logger.info(f"Успешная регистрация: {user.email} (ID: {user.id})")
-            return JsonResponse(response_data, status=201)
-
-        except Exception as e:
-            logger.error(f"Неожиданная ошибка при регистрации: {e}")
-            return JsonResponse({
-                'error': 'Внутренняя ошибка сервера',
-                'details': str(e)
-            }, status=500)
-
-    else:
-        return JsonResponse({
-            'error': 'Метод не разрешен',
-            'allowed_methods': ['POST']
-        }, status=405)
-
-@csrf_exempt
-def login(request):
-    """
-    Аутентификация пользователя
-    """
-    if request.method == 'POST':
-        try:
-            # Парсим JSON данные
-            try:
-                data = json.loads(request.body.decode('utf-8'))
-            except json.JSONDecodeError as e:
-                logger.error(f"Ошибка парсинга JSON: {e}")
-                return JsonResponse({
-                    'error': 'Неверный формат данных',
-                    'details': str(e)
-                }, status=400)
-
-            logger.info(f"Попытка входа: {data.get('email', 'No email')}")
-
-            # Валидация обязательных полей
-            required_fields = ['email', 'password']
-            if not all(field in data for field in required_fields):
-                return JsonResponse({
-                    'error': 'Отсутствуют обязательные поля',
-                    'required': required_fields
-                }, status=400)
-
-            email = data['email']
-            password = data['password']
-
-            # Ищем пользователя по email
-            try:
-                user = User.objects.get(email=email)
-                logger.info(f"Найден пользователь: {user.id}")
-            except User.DoesNotExist:
-                logger.warning(f"Пользователь не найден: {email}")
-                return JsonResponse({
-                    'error': 'Неверный email или пароль'
-                }, status=400)
-
-            # Аутентифицируем пользователя
-            user = authenticate(username=user.username, password=password)
-            if user is None:
-                logger.warning(f"Неверный пароль для пользователя: {email}")
-                return JsonResponse({
-                    'error': 'Неверный email или пароль'
-                }, status=400)
-
-            # Получаем или создаем профиль пользователя
-            try:
-                profile, created = UserProfile.objects.get_or_create(
-                    user=user,
-                    defaults={
-                        'full_name': f"{user.first_name} {user.last_name}".strip() or user.email,
-                        'department': 'Не указан',
-                        'organization': 'Не указана'
-                    }
-                )
-                if created:
-                    logger.info(f"Создан профиль по умолчанию для: {user.id}")
-            except Exception as e:
-                logger.error(f"Ошибка получения профиля: {e}")
-                return JsonResponse({
-                    'error': 'Ошибка получения данных пользователя'
-                }, status=400)
-
-            # Создаем JWT токен
-            try:
-                payload = {
-                    'user_id': user.id,
-                    'email': user.email,
-                    'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7)
-                }
-                token = jwt.encode(payload, get_secret_key(), algorithm='HS256')
-                
-                # Если token в bytes, конвертируем в string
-                if isinstance(token, bytes):
-                    token = token.decode('utf-8')
-                    
-            except Exception as e:
-                logger.error(f"Ошибка создания токена: {e}")
-                return JsonResponse({
-                    'error': 'Ошибка создания токена'
-                }, status=400)
-
-            # Формируем успешный ответ
-            response_data = {
-                'message': 'Вход выполнен успешно',
-                'token': token,
-                'user': {
-                    'id': user.id,
-                    'email': user.email,
-                    'full_name': profile.full_name,
-                    'department': profile.department,
-                    'organization': profile.organization
-                },
-                'timestamp': datetime.datetime.now().isoformat()
-            }
-
-            logger.info(f"Успешный вход: {user.email} (ID: {user.id})")
-            return JsonResponse(response_data)
-
-        except Exception as e:
-            logger.error(f"Неожиданная ошибка при входе: {e}")
-            return JsonResponse({
-                'error': 'Внутренняя ошибка сервера',
-                'details': str(e)
-            }, status=500)
-
-    else:
-        return JsonResponse({
-            'error': 'Метод не разрешен',
-            'allowed_methods': ['POST']
-        }, status=405)
-
-@csrf_exempt
-def save_quiz_result(request):
-    """
-    Сохранение результатов теста
-    """
-    if request.method == 'POST':
-        try:
-            # Проверяем авторизацию
-            auth_header = request.headers.get('Authorization', '')
-            if not auth_header.startswith('Bearer '):
-                return JsonResponse({
-                    'error': 'Требуется авторизация',
-                    'details': 'Отсутствует или неверный токен'
-                }, status=401)
-
-            token = auth_header.replace('Bearer ', '')
             
-            try:
-                payload = jwt.decode(token, get_secret_key(), algorithms=['HS256'])
-                user = User.objects.get(id=payload['user_id'])
-                logger.info(f"Сохранение результата для пользователя: {user.id}")
-            except jwt.ExpiredSignatureError:
-                return JsonResponse({
-                    'error': 'Токен истек'
-                }, status=401)
-            except jwt.InvalidTokenError:
-                return JsonResponse({
-                    'error': 'Неверный токен'
-                }, status=401)
-            except User.DoesNotExist:
-                return JsonResponse({
-                    'error': 'Пользователь не найден'
-                }, status=401)
-
-            # Парсим данные теста
-            try:
-                data = json.loads(request.body.decode('utf-8'))
-            except json.JSONDecodeError as e:
-                return JsonResponse({
-                    'error': 'Неверный формат данных',
-                    'details': str(e)
-                }, status=400)
-
-            # Валидация данных теста
-            required_fields = ['score', 'total_questions', 'percentage']
-            if not all(field in data for field in required_fields):
-                return JsonResponse({
-                    'error': 'Отсутствуют данные теста',
-                    'required': required_fields
-                }, status=400)
-
-            # Сохраняем результат
-            try:
-                quiz_result = QuizResult.objects.create(
-                    user=user,
-                    score=data['score'],
-                    total_questions=data['total_questions'],
-                    percentage=data['percentage']
-                )
-                logger.info(f"Сохранен результат теста: {quiz_result.id}")
-            except Exception as e:
-                logger.error(f"Ошибка сохранения результата: {e}")
-                return JsonResponse({
-                    'error': 'Ошибка сохранения результата',
-                    'details': str(e)
-                }, status=400)
-
-            # Получаем лучший результат пользователя
-            best_result = QuizResult.objects.filter(user=user).order_by('-percentage').first()
-
-            response_data = {
-                'message': 'Результат успешно сохранен',
-                'current_score': data['percentage'],
-                'best_score': best_result.percentage if best_result else data['percentage'],
-                'quiz_id': str(quiz_result.id),
-                'timestamp': datetime.datetime.now().isoformat()
-            }
-
-            return JsonResponse(response_data)
-
-        except Exception as e:
-            logger.error(f"Неожиданная ошибка при сохранении результата: {e}")
+            # Создаем пользователя
+            user = User.objects.create_user(
+                username=data['email'],
+                email=data['email'],
+                password=data['password'],
+                first_name=data.get('full_name', '').split(' ')[0] if data.get('full_name') else '',
+                last_name=' '.join(data.get('full_name', '').split(' ')[1:]) if data.get('full_name') else ''
+            )
+            
+            # Создаем профиль пользователя
+            profile = UserProfile.objects.create(
+                user=user,
+                full_name=data.get('full_name', ''),
+                department=data.get('department', ''),
+                organization=data.get('organization', ''),
+                privacy_policy_accepted=data.get('privacy_policy', False),
+                pd_consent_accepted=data.get('pd_consent', False),
+                consent_accepted_at=timezone.now()
+            )
+            
+            # Логируем согласие на политику конфиденциальности
+            PDConsentLog.objects.create(
+                user=user,
+                consent_type='privacy_policy',
+                accepted=data.get('privacy_policy', False),
+                ip_address=get_client_ip(request),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
+            
+            # Логируем согласие на обработку ПДн
+            PDConsentLog.objects.create(
+                user=user,
+                consent_type='pd_consent',
+                accepted=data.get('pd_consent', False),
+                ip_address=get_client_ip(request),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
+            
+            # Генерируем токен
+            token = generate_token(user)
+            
             return JsonResponse({
-                'error': 'Внутренняя ошибка сервера',
-                'details': str(e)
+                'token': token,
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'full_name': profile.full_name,
+                    'department': profile.department,
+                    'organization': profile.organization,
+                    'privacy_policy_accepted': profile.privacy_policy_accepted,
+                    'pd_consent_accepted': profile.pd_consent_accepted,
+                    'consent_accepted_at': profile.consent_accepted_at.isoformat() if profile.consent_accepted_at else None
+                },
+                'message': 'Регистрация успешно завершена'
+            })
+            
+        except IntegrityError:
+            return JsonResponse({
+                'error': 'Пользователь с таким email уже существует'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Ошибка при регистрации: {str(e)}'
             }, status=500)
 
-    else:
-        return JsonResponse({
-            'error': 'Метод не разрешен',
-            'allowed_methods': ['POST']
-        }, status=405)
+@csrf_exempt
+@require_http_methods(["POST"])
+def login(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            # Проверяем обязательные поля
+            if not data.get('email') or not data.get('password'):
+                return JsonResponse({
+                    'error': 'Email и пароль обязательны для заполнения'
+                }, status=400)
+            
+            # Аутентифицируем пользователя
+            user = authenticate(username=data['email'], password=data['password'])
+            
+            if user is not None:
+                # Получаем профиль пользователя
+                try:
+                    profile = UserProfile.objects.get(user=user)
+                except UserProfile.DoesNotExist:
+                    # Если профиль не существует, создаем его
+                    profile = UserProfile.objects.create(
+                        user=user,
+                        full_name=user.get_full_name() or user.email,
+                        department='Не указан',
+                        organization='Не указана'
+                    )
+                
+                # Генерируем токен
+                token = generate_token(user)
+                
+                return JsonResponse({
+                    'token': token,
+                    'user': {
+                        'id': user.id,
+                        'email': user.email,
+                        'full_name': profile.full_name,
+                        'department': profile.department,
+                        'organization': profile.organization,
+                        'privacy_policy_accepted': profile.privacy_policy_accepted,
+                        'pd_consent_accepted': profile.pd_consent_accepted,
+                        'consent_accepted_at': profile.consent_accepted_at.isoformat() if profile.consent_accepted_at else None
+                    },
+                    'message': 'Вход выполнен успешно'
+                })
+            else:
+                return JsonResponse({
+                    'error': 'Неверный email или пароль'
+                }, status=401)
+                
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Ошибка при входе: {str(e)}'
+            }, status=500)
 
 @csrf_exempt
+@require_http_methods(["POST"])
+def save_quiz_result(request):
+    if request.method == 'POST':
+        try:
+            # Проверяем аутентификацию
+            user = get_user_from_token(request)
+            if not user:
+                return JsonResponse({
+                    'error': 'Необходима авторизация'
+                }, status=401)
+            
+            data = json.loads(request.body)
+            
+            # Проверяем обязательные поля
+            required_fields = ['score', 'total_questions', 'percentage']
+            for field in required_fields:
+                if field not in data:
+                    return JsonResponse({
+                        'error': f'Отсутствует обязательное поле: {field}'
+                    }, status=400)
+            
+            # Проверяем корректность данных
+            if data['score'] < 0 or data['total_questions'] <= 0:
+                return JsonResponse({
+                    'error': 'Некорректные данные результата теста'
+                }, status=400)
+            
+            if data['percentage'] < 0 or data['percentage'] > 100:
+                return JsonResponse({
+                    'error': 'Процент выполнения должен быть от 0 до 100'
+                }, status=400)
+            
+            # Сохраняем результат теста
+            quiz_result = QuizResult.objects.create(
+                user=user,
+                score=data['score'],
+                total_questions=data['total_questions'],
+                percentage=data['percentage']
+            )
+            
+            return JsonResponse({
+                'id': str(quiz_result.id),
+                'score': quiz_result.score,
+                'total_questions': quiz_result.total_questions,
+                'percentage': quiz_result.percentage,
+                'completed_at': quiz_result.completed_at.isoformat(),
+                'message': 'Результат теста успешно сохранен'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Ошибка при сохранении результата теста: {str(e)}'
+            }, status=500)
+
+@csrf_exempt
+@require_http_methods(["GET"])
 def get_user_stats(request):
-    """
-    Получение статистики пользователя
-    """
     if request.method == 'GET':
         try:
-            # Проверяем авторизацию
-            auth_header = request.headers.get('Authorization', '')
-            if not auth_header.startswith('Bearer '):
+            # Проверяем аутентификацию
+            user = get_user_from_token(request)
+            if not user:
                 return JsonResponse({
-                    'error': 'Требуется авторизация',
-                    'details': 'Отсутствует или неверный токен'
+                    'error': 'Необходима авторизация'
                 }, status=401)
-
-            token = auth_header.replace('Bearer ', '')
             
-            try:
-                payload = jwt.decode(token, get_secret_key(), algorithms=['HS256'])
-                user = User.objects.get(id=payload['user_id'])
-                logger.info(f"Получение статистики для пользователя: {user.id}")
-            except jwt.ExpiredSignatureError:
-                return JsonResponse({
-                    'error': 'Токен истек'
-                }, status=401)
-            except jwt.InvalidTokenError:
-                return JsonResponse({
-                    'error': 'Неверный токен'
-                }, status=401)
-            except User.DoesNotExist:
-                return JsonResponse({
-                    'error': 'Пользователь не найден'
-                }, status=401)
-
             # Получаем профиль пользователя
             try:
-                profile, created = UserProfile.objects.get_or_create(
-                    user=user,
-                    defaults={
-                        'full_name': f"{user.first_name} {user.last_name}".strip() or user.email,
-                        'department': 'Не указан',
-                        'organization': 'Не указана'
-                    }
-                )
-            except Exception as e:
-                logger.error(f"Ошибка получения профиля: {e}")
+                profile = UserProfile.objects.get(user=user)
+            except UserProfile.DoesNotExist:
                 return JsonResponse({
-                    'error': 'Ошибка получения данных пользователя'
-                }, status=400)
-
-            # Получаем статистику пользователя
-            results = QuizResult.objects.filter(user=user).order_by('-percentage')
-            best_result = results.first() if results.exists() else None
-            total_attempts = results.count()
-
-            # Получаем историю попыток
-            attempts_history = [
-                {
+                    'error': 'Профиль пользователя не найден'
+                }, status=404)
+            
+            # Получаем все результаты тестов пользователя
+            quiz_results = QuizResult.objects.filter(user=user).order_by('-completed_at')
+            
+            # Рассчитываем статистику
+            total_attempts = quiz_results.count()
+            best_score = 0
+            last_attempt = None
+            
+            attempts_history = []
+            
+            for result in quiz_results:
+                # Лучший результат
+                if result.percentage > best_score:
+                    best_score = result.percentage
+                
+                # Последняя попытка
+                if not last_attempt or result.completed_at > last_attempt:
+                    last_attempt = result.completed_at
+                
+                # История попыток
+                attempts_history.append({
                     'score': result.score,
                     'total_questions': result.total_questions,
                     'percentage': result.percentage,
                     'completed_at': result.completed_at.isoformat()
-                }
-                for result in results[:10]  # Последние 10 попыток
-            ]
-
-            response_data = {
+                })
+            
+            # Формируем ответ
+            stats_data = {
                 'user': {
+                    'id': user.id,
+                    'email': user.email,
                     'full_name': profile.full_name,
                     'department': profile.department,
                     'organization': profile.organization,
-                    'email': user.email
+                    'privacy_policy_accepted': profile.privacy_policy_accepted,
+                    'pd_consent_accepted': profile.pd_consent_accepted,
+                    'consent_accepted_at': profile.consent_accepted_at.isoformat() if profile.consent_accepted_at else None,
+                    'registered_at': user.date_joined.isoformat()
                 },
                 'stats': {
-                    'best_score': best_result.percentage if best_result else 0,
+                    'best_score': round(best_score, 1),
                     'total_attempts': total_attempts,
-                    'last_attempt': best_result.completed_at.isoformat() if best_result else None,
+                    'last_attempt': last_attempt.isoformat() if last_attempt else None,
                     'attempts_history': attempts_history
-                },
-                'timestamp': datetime.datetime.now().isoformat()
+                }
             }
-
-            return JsonResponse(response_data)
-
+            
+            return JsonResponse(stats_data)
+            
         except Exception as e:
-            logger.error(f"Неожиданная ошибка при получении статистики: {e}")
             return JsonResponse({
-                'error': 'Внутренняя ошибка сервера',
-                'details': str(e)
+                'error': f'Ошибка при получении статистики: {str(e)}'
             }, status=500)
 
-    else:
-        return JsonResponse({
-            'error': 'Метод не разрешен',
-            'allowed_methods': ['GET']
-        }, status=405)
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_consent_history(request):
+    """Получение истории согласий пользователя (для админа или самого пользователя)"""
+    if request.method == 'GET':
+        try:
+            # Проверяем аутентификацию
+            user = get_user_from_token(request)
+            if not user:
+                return JsonResponse({
+                    'error': 'Необходима авторизация'
+                }, status=401)
+            
+            # Получаем историю согласий пользователя
+            consent_history = PDConsentLog.objects.filter(user=user).order_by('-accepted_at')
+            
+            history_data = []
+            for consent in consent_history:
+                history_data.append({
+                    'consent_type': consent.consent_type,
+                    'accepted': consent.accepted,
+                    'accepted_at': consent.accepted_at.isoformat(),
+                    'ip_address': consent.ip_address
+                })
+            
+            return JsonResponse({
+                'user_id': user.id,
+                'email': user.email,
+                'consent_history': history_data
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Ошибка при получении истории согласий: {str(e)}'
+            }, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def revoke_consent(request):
+    """Отзыв согласия на обработку ПДн"""
+    if request.method == 'POST':
+        try:
+            # Проверяем аутентификацию
+            user = get_user_from_token(request)
+            if not user:
+                return JsonResponse({
+                    'error': 'Необходима авторизация'
+                }, status=401)
+            
+            data = json.loads(request.body)
+            consent_type = data.get('consent_type', 'pd_consent')
+            
+            # Логируем отзыв согласия
+            PDConsentLog.objects.create(
+                user=user,
+                consent_type=consent_type,
+                accepted=False,
+                ip_address=get_client_ip(request),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
+            
+            # Обновляем профиль пользователя
+            profile = UserProfile.objects.get(user=user)
+            if consent_type == 'pd_consent':
+                profile.pd_consent_accepted = False
+            elif consent_type == 'privacy_policy':
+                profile.privacy_policy_accepted = False
+            
+            profile.save()
+            
+            return JsonResponse({
+                'message': f'Согласие на {consent_type} успешно отозвано',
+                'consent_type': consent_type,
+                'accepted': False,
+                'revoked_at': timezone.now().isoformat()
+            })
+            
+        except UserProfile.DoesNotExist:
+            return JsonResponse({
+                'error': 'Профиль пользователя не найден'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Ошибка при отзыве согласия: {str(e)}'
+            }, status=500)
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def check_consent_status(request):
+    """Проверка статуса согласий пользователя"""
+    if request.method == 'GET':
+        try:
+            # Проверяем аутентификацию
+            user = get_user_from_token(request)
+            if not user:
+                return JsonResponse({
+                    'error': 'Необходима авторизация'
+                }, status=401)
+            
+            # Получаем профиль пользователя
+            try:
+                profile = UserProfile.objects.get(user=user)
+            except UserProfile.DoesNotExist:
+                return JsonResponse({
+                    'error': 'Профиль пользователя не найден'
+                }, status=404)
+            
+            return JsonResponse({
+                'user_id': user.id,
+                'email': user.email,
+                'consents': {
+                    'privacy_policy': {
+                        'accepted': profile.privacy_policy_accepted,
+                        'accepted_at': profile.consent_accepted_at.isoformat() if profile.consent_accepted_at else None
+                    },
+                    'pd_consent': {
+                        'accepted': profile.pd_consent_accepted,
+                        'accepted_at': profile.consent_accepted_at.isoformat() if profile.consent_accepted_at else None
+                    }
+                }
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Ошибка при проверке статуса согласий: {str(e)}'
+            }, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def update_user_profile(request):
+    """Обновление профиля пользователя"""
+    if request.method == 'POST':
+        try:
+            # Проверяем аутентификацию
+            user = get_user_from_token(request)
+            if not user:
+                return JsonResponse({
+                    'error': 'Необходима авторизация'
+                }, status=401)
+            
+            data = json.loads(request.body)
+            
+            # Получаем профиль пользователя
+            try:
+                profile = UserProfile.objects.get(user=user)
+            except UserProfile.DoesNotExist:
+                return JsonResponse({
+                    'error': 'Профиль пользователя не найден'
+                }, status=404)
+            
+            # Обновляем поля профиля
+            if 'full_name' in data:
+                profile.full_name = data['full_name']
+                # Также обновляем first_name и last_name пользователя
+                names = data['full_name'].split(' ', 1)
+                user.first_name = names[0]
+                user.last_name = names[1] if len(names) > 1 else ''
+                user.save()
+            
+            if 'department' in data:
+                profile.department = data['department']
+            
+            if 'organization' in data:
+                profile.organization = data['organization']
+            
+            profile.save()
+            
+            return JsonResponse({
+                'message': 'Профиль успешно обновлен',
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'full_name': profile.full_name,
+                    'department': profile.department,
+                    'organization': profile.organization,
+                    'privacy_policy_accepted': profile.privacy_policy_accepted,
+                    'pd_consent_accepted': profile.pd_consent_accepted
+                }
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Ошибка при обновлении профиля: {str(e)}'
+            }, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def change_password(request):
+    """Смена пароля пользователя"""
+    if request.method == 'POST':
+        try:
+            # Проверяем аутентификацию
+            user = get_user_from_token(request)
+            if not user:
+                return JsonResponse({
+                    'error': 'Необходима авторизация'
+                }, status=401)
+            
+            data = json.loads(request.body)
+            
+            # Проверяем текущий пароль
+            current_password = data.get('current_password')
+            new_password = data.get('new_password')
+            
+            if not current_password or not new_password:
+                return JsonResponse({
+                    'error': 'Текущий и новый пароль обязательны'
+                }, status=400)
+            
+            # Проверяем текущий пароль
+            if not user.check_password(current_password):
+                return JsonResponse({
+                    'error': 'Неверный текущий пароль'
+                }, status=400)
+            
+            # Устанавливаем новый пароль
+            user.set_password(new_password)
+            user.save()
+            
+            # Генерируем новый токен
+            token = generate_token(user)
+            
+            return JsonResponse({
+                'message': 'Пароль успешно изменен',
+                'token': token  # Возвращаем новый токен
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Ошибка при смене пароля: {str(e)}'
+            }, status=500)
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_account(request):
+    """Удаление аккаунта пользователя"""
+    if request.method == 'DELETE':
+        try:
+            # Проверяем аутентификацию
+            user = get_user_from_token(request)
+            if not user:
+                return JsonResponse({
+                    'error': 'Необходима авторизация'
+                }, status=401)
+            
+            data = json.loads(request.body)
+            confirmation = data.get('confirmation')
+            
+            if confirmation != 'YES_DELETE_MY_ACCOUNT':
+                return JsonResponse({
+                    'error': 'Неверное подтверждение удаления аккаунта'
+                }, status=400)
+            
+            # Логируем удаление аккаунта (перед фактическим удалением)
+            PDConsentLog.objects.create(
+                user=user,
+                consent_type='account_deletion',
+                accepted=False,
+                ip_address=get_client_ip(request),
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                notes='Пользователь удалил аккаунт'
+            )
+            
+            # Сохраняем email для логирования
+            user_email = user.email
+            
+            # Удаляем пользователя (это каскадно удалит все связанные записи)
+            user.delete()
+            
+            return JsonResponse({
+                'message': f'Аккаунт {user_email} успешно удален',
+                'deleted_at': timezone.now().isoformat()
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Ошибка при удалении аккаунта: {str(e)}'
+            }, status=500)
