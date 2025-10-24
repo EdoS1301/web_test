@@ -219,6 +219,75 @@ body {
   background: #f8f9fa;
 }
 
+/* Стили для кнопки статистики */
+.dropdown-item.stats-btn {
+  position: relative;
+  padding: 10px 8px 10px 16px;
+  margin: 2px 12px;
+  font-size: 0.85rem;
+  width: calc(100% - 24px);
+  background: transparent;
+  border: none;
+  color: #1a1a1a;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.stats-text {
+  flex: 1;
+  font-weight: 600;
+  position: relative;
+  margin-left: -4px;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+/* Анимация приподнятия для текста статистики */
+.dropdown-item.stats-btn:hover .stats-text {
+  transform: translateY(-2px);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Анимация для иконки статистики */
+.stats-icon {
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  margin-right: 6px;
+  display: inline-block;
+}
+
+.dropdown-item.stats-btn:hover .stats-icon {
+  transform: translateY(-2px) scale(1.05);
+}
+
+/* Стили для кнопки выхода */
+.dropdown-item.logout-btn {
+  position: relative;
+  padding: 10px 8px 10px 16px;
+  margin: 2px 12px;
+  font-size: 0.85rem;
+  width: calc(100% - 24px);
+  background: transparent;
+  border: none;
+  color: #dc2626;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.logout-text {
+  position: relative;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+/* Анимация приподнятия для текста выхода */
+.dropdown-item.logout-btn:hover .logout-text {
+  transform: translateY(-2px);
+  text-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+}
+
 /* Navigation in Header */
 .navigation {
   display: flex;
@@ -283,16 +352,6 @@ body {
   cursor: default;
 }
 
-/* Убираем hover эффект для основного блока */
-.article-section:hover {
-  transform: none;
-  box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.25),
-    0 15px 30px rgba(0, 0, 0, 0.15),
-    0 5px 15px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-
 .article-section h2 {
   color: #1a1a1a;
   margin-bottom: 2rem;
@@ -332,15 +391,8 @@ body {
   border-radius: 16px;
   margin: 2rem 0;
   border: 1px solid #e5e5e5;
-  transition: all 0.2s ease;
-  position: relative;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   cursor: default;
-}
-
-.card:hover {
-  transform: none;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
 }
 
 .card h3 {
@@ -429,14 +481,8 @@ body {
   border-radius: 16px;
   text-align: center;
   border: 1px solid #e5e5e5;
-  transition: all 0.2s ease;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   cursor: default;
-}
-
-.stat-item:hover {
-  transform: none;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .stat-number {
@@ -467,15 +513,9 @@ body {
   padding: 2rem 1.5rem;
   border-radius: 16px;
   border-left: 4px solid #1a1a1a;
-  transition: all 0.2s ease;
   border: 1px solid #e5e5e5;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   cursor: default;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-.technique-card:hover {
-  transform: none;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .technique-card h4 {
@@ -503,14 +543,8 @@ body {
   border-radius: 16px;
   border-left: 4px solid #1a1a1a;
   border: 1px solid #e5e5e5;
-  transition: all 0.2s ease;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   cursor: default;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-.attack-type:hover {
-  transform: none;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .attack-type h3 {
@@ -568,15 +602,9 @@ body {
   padding: 2rem 1.5rem;
   border-radius: 16px;
   border-left: 4px solid #1a1a1a;
-  transition: all 0.2s ease;
   border: 1px solid #e5e5e5;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   cursor: default;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-.warning-sign:hover {
-  transform: none;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .warning-sign h4 {
@@ -604,14 +632,8 @@ body {
   padding: 2.5rem 2rem;
   border-radius: 16px;
   border: 1px solid #e5e5e5;
-  transition: all 0.2s ease;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   cursor: default;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-.protection-card:hover {
-  transform: none;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .protection-card h4 {
@@ -1097,134 +1119,6 @@ body {
   border-top: 2px solid #666;
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-  .container {
-    padding: 0 20px;
-  }
-  
-  .header-content {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-  
-  .header-left h1 {
-    font-size: 1.3rem;
-  }
-  
-  .user-profile-btn {
-    min-width: 180px;
-  }
-  
-  .navigation {
-    flex-wrap: wrap;
-  }
-  
-  .nav-link {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-  }
-  
-  .article-section {
-    padding: 2rem 1.5rem;
-    margin: 0 0 1.5rem;
-  }
-  
-  .article-section h2 {
-    font-size: 1.7rem;
-  }
-  
-  .techniques-grid,
-  .warning-signs,
-  .protection-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-  
-  .attack-type,
-  .protection-card {
-    padding: 1.5rem;
-  }
-  
-  .card {
-    padding: 1.5rem;
-  }
-  
-  .question-card {
-    padding: 2rem;
-  }
-  
-  .quiz-cta {
-    padding: 2rem;
-  }
-  
-  .main {
-    padding: 1rem 0;
-    margin-top: 180px;
-  }
-  
-  .header.scrolled ~ .main {
-    margin-top: 120px;
-  }
-  
-  .login-card {
-    padding: 2rem 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
-    padding: 0 16px;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .header h1 {
-    font-size: 1.8rem;
-  }
-  
-  .article-section {
-    padding: 1.5rem 1.2rem;
-  }
-  
-  .article-section h2 {
-    font-size: 1.5rem;
-  }
-  
-  .article-section p {
-    font-size: 1rem;
-    text-align: left;
-  }
-  
-  .navigation {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .nav-link {
-    width: 200px;
-    text-align: center;
-  }
-  
-  .login-card {
-    padding: 1.5rem;
-  }
-  
-  .main {
-    margin-top: 200px;
-  }
-  
-  .header.scrolled ~ .main {
-    margin-top: 140px;
-  }
-}
 /* Stats Page Styles */
 .attempts-history {
   max-height: 400px;
@@ -1255,63 +1149,7 @@ body {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-/* Responsive improvements for stats */
-@media (max-width: 768px) {
-  .attempt-item {
-    padding: 1rem;
-  }
-  
-  .attempt-item div {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-}
-
-/* Stats Page Styles */
-.attempts-history {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.attempt-item {
-  transition: all 0.2s ease;
-}
-
-.attempt-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Achievement badges */
-.achievement-badge {
-  text-align: center;
-  padding: 1rem;
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e5e5e5;
-  transition: all 0.2s ease;
-}
-
-.achievement-badge:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-/* Responsive improvements for stats */
-@media (max-width: 768px) {
-  .attempt-item {
-    padding: 1rem;
-  }
-  
-  .attempt-item div {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-}
-
-/* Добавить в конец App.css */
+/* Policy and Consent Styles */
 .policy-container {
   background: white;
   padding: 3rem;
@@ -1394,75 +1232,6 @@ body {
   margin-top: 4rem;
 }
 
-/* Стили для кнопки статистики */
-.dropdown-item.stats-btn {
-  position: relative;
-  padding: 10px 8px 10px 16px;
-  margin: 2px 12px;
-  font-size: 0.85rem;
-  width: calc(100% - 24px);
-  background: transparent;
-  border: none;
-  color: #1a1a1a;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: left;
-}
-
-.stats-text {
-  flex: 1;
-  font-weight: 600;
-  position: relative;
-  margin-left: -4px;
-  transition: all 0.3s ease;
-  display: inline-block;
-}
-
-/* Анимация приподнятия для текста статистики */
-.dropdown-item.stats-btn:hover .stats-text {
-  transform: translateY(-2px);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Анимация для иконки статистики */
-.stats-icon {
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-  margin-right: 6px;
-  display: inline-block;
-}
-
-.dropdown-item.stats-btn:hover .stats-icon {
-  transform: translateY(-2px) scale(1.05);
-}
-
-/* Стили для кнопки выхода */
-.dropdown-item.logout-btn {
-  position: relative;
-  padding: 10px 8px 10px 16px;
-  margin: 2px 12px;
-  font-size: 0.85rem;
-  width: calc(100% - 24px);
-  background: transparent;
-  border: none;
-  color: #dc2626;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: left;
-}
-
-.logout-text {
-  position: relative;
-  transition: all 0.3s ease;
-  display: inline-block;
-}
-
-/* Анимация приподнятия для текста выхода */
-.dropdown-item.logout-btn:hover .logout-text {
-  transform: translateY(-2px);
-  text-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
-}
-
 /* Стили для формы согласия */
 .consent-container {
   background: white;
@@ -1520,5 +1289,166 @@ body {
   .consent-content {
     font-size: 12pt;
     line-height: 1.4;
+  }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 20px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .header-left h1 {
+    font-size: 1.3rem;
+  }
+  
+  .user-profile-btn {
+    min-width: 180px;
+  }
+  
+  .navigation {
+    flex-wrap: wrap;
+  }
+  
+  .nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .article-section {
+    padding: 2rem 1.5rem;
+    margin: 0 0 1.5rem;
+  }
+  
+  .article-section h2 {
+    font-size: 1.7rem;
+  }
+  
+  .techniques-grid,
+  .warning-signs,
+  .protection-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .attack-type,
+  .protection-card {
+    padding: 1.5rem;
+  }
+  
+  .card {
+    padding: 1.5rem;
+  }
+  
+  .question-card {
+    padding: 2rem;
+  }
+  
+  .quiz-cta {
+    padding: 2rem;
+  }
+  
+  .main {
+    padding: 1rem 0;
+    margin-top: 180px;
+  }
+  
+  .header.scrolled ~ .main {
+    margin-top: 120px;
+  }
+  
+  .login-card {
+    padding: 2rem 1.5rem;
+  }
+  
+  .policy-container,
+  .consent-container {
+    padding: 2rem 1.5rem;
+  }
+  
+  .attempt-item {
+    padding: 1rem;
+  }
+  
+  .attempt-item div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .article-section {
+    padding: 1.5rem 1.2rem;
+  }
+  
+  .article-section h2 {
+    font-size: 1.5rem;
+  }
+  
+  .article-section p {
+    font-size: 1rem;
+    text-align: left;
+  }
+  
+  .navigation {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .nav-link {
+    width: 200px;
+    text-align: center;
+  }
+  
+  .login-card {
+    padding: 1.5rem;
+  }
+  
+  .policy-container,
+  .consent-container {
+    padding: 1.5rem 1.2rem;
+  }
+  
+  .main {
+    margin-top: 200px;
+  }
+  
+  .header.scrolled ~ .main {
+    margin-top: 140px;
+  }
+  
+  .login-tabs {
+    flex-direction: column;
+  }
+  
+  .tab {
+    padding: 0.8rem;
+  }
+  
+  .checkbox-label {
+    font-size: 0.9rem;
   }
 }
