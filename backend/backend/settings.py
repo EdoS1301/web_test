@@ -4,8 +4,19 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-default-key-change-in-production')
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,web,nginx,0.0.0.0').split(',')
+
+DEBUG = False
+
+# Разрешаем ВСЕ внутренние IP и облачный сервер
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1', 
+    'web',
+    '192.168.168.11',  # Основной сервер
+    '192.168.168.10',  # Внешний сервер
+    '192.168.12.180',        # Облачный сервер
+
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -43,6 +54,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'debug': False,  # Тоже выключаем
         },
     },
 ]
@@ -80,7 +92,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Статические файлы - ИСПРАВЛЕНО
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
@@ -89,8 +100,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS settings
+# CORS settings - разрешаем IP облачного сервера
 CORS_ALLOWED_ORIGINS = [
+    "http://192.168.168.11",
+    "http://192.168.168.10", 
+    "http://192.168.12.180",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:80",
@@ -100,10 +114,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# Разрешаем все методы
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
@@ -125,7 +137,6 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-# Добавьте в конец settings.py
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
