@@ -75,7 +75,7 @@ const LoginPage = () => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1>Курс по фишингу</h1>
+          <h1>Противодействие фишингу</h1>
           <p>Пройти обучение и тестирование по кибербезопасности</p>
         </div>
 
