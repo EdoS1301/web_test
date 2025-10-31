@@ -1,44 +1,81 @@
 #!/bin/bash
 set -e
 
-echo "=== ПОЛНАЯ ПОДГОТОВКА ДЛЯ ОФФЛАЙН РАБОТЫ ==="
+echo "=== ПОДГОТОВКА ДЛЯ ОФФЛАЙН РАБОТЫ ==="
 
-# 1. Сначала скачаем все базовые образы
+# 1. Скачиваем базовые образы
 echo "1. Скачивание базовых образов..."
 docker pull python:3.11-slim
 docker pull node:18-alpine
 docker pull nginx:alpine
 docker pull postgres:15
 
-# 2. Собираем наши кастомные образы
+# 2. Собираем кастомные образы
 echo "2. Сборка кастомных образов..."
 docker compose build
 
-# 3. Запускаем и тестируем
-echo "3. Тестовый запуск..."
+# 3. Создаем скрипт для генерации сертификатов
+echo "3. Создание скрипта generate-cert.sh..."
+cat > generate-cert.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "=== ГЕНЕРАЦИЯ SSL СЕРТИФИКАТОВ ==="
+
+# Создаем директории проекта
+mkdir -p .ssl/private .ssl/certs
+
+# Генерируем сертификат
+openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
+    -keyout .ssl/private/nginx.key \
+    -out .ssl/certs/nginx.crt \
+    -subj "/C=RU/ST=Adygheya/L=Adygheya/O=MinCifra/CN=localhost"
+
+echo "✅ SSL сертификаты созданы в проекте:"
+echo "   - .ssl/certs/nginx.crt"
+echo "   - .ssl/private/nginx.key"
+
+# Копируем на прокси-сервер если указан
+if [ -n "$PROXY_SERVER" ]; then
+    echo "Копируем сертификаты на прокси-сервер: $PROXY_SERVER"
+    scp .ssl/certs/nginx.crt $PROXY_SERVER:/etc/ssl/certs/nginx.crt
+    scp .ssl/private/nginx.key $PROXY_SERVER:/etc/ssl/private/nginx.key
+    ssh $PROXY_SERVER "chmod 600 /etc/ssl/private/nginx.key && chmod 644 /etc/ssl/certs/nginx.crt"
+    echo "✅ Сертификаты скопированы на прокси-сервер"
+else
+    echo "ℹ️  Чтобы скопировать на прокси-сервер, установи переменную:"
+    echo "    export PROXY_SERVER=user@proxy-server-ip"
+fi
+EOF
+
+chmod +x generate-cert.sh
+
+# 4. Тестовый запуск
+echo "4. Тестовый запуск..."
 docker compose up -d
 sleep 10
 
-# 4. Проверяем работу
-if curl -f http://localhost:3000 >/dev/null 2>&1; then
-    echo "✅ Frontend работает"
+# 5. Проверяем работу
+if curl -k -f https://localhost/health >/dev/null 2>&1; then
+    echo "✅ Приложение работает"
 else
-    echo "⚠️ Frontend не отвечает"
+    echo "⚠️ Приложение не отвечает"
 fi
 
 docker compose down
 
-# 5. Сохраняем ВСЕ образы которые могут понадобиться
-echo "5. Сохранение всех образов..."
-docker save -o all-docker-images.tar \
+# 6. Сохраняем образы
+echo "6. Сохранение Docker образов..."
+docker save -o docker-images.tar \
   python:3.11-slim \
   node:18-alpine \
   nginx:alpine \
   postgres:15 \
   $(docker images --filter "reference=*web_test*" --format "{{.Repository}}:{{.Tag}}")
 
-echo "6. Создание оффлайн конфигурации..."
-cat > docker-compose.offline.yml << 'EOF'
+# 7. Создаем оффлайн docker-compose.yml
+echo "7. Создание оффлайн docker-compose.yml..."
+cat > docker-compose-offline.yml << 'EOF'
 services:
   backend:
     image: web_test-backend
@@ -47,6 +84,7 @@ services:
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+      - ./backend/backend/settings.py:/app/backend/settings.py:rw
     expose:
       - "8000"
     depends_on:
@@ -57,8 +95,6 @@ services:
 
   frontend:
     image: web_test-frontend
-    ports:
-      - "3000:80"
     restart: unless-stopped
 
   db:
@@ -75,8 +111,11 @@ services:
     image: nginx:alpine
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./.ssl/certs/nginx.crt:/etc/ssl/certs/nginx.crt:ro
+      - ./.ssl/private/nginx.key:/etc/ssl/private/nginx.key:ro
       - static_volume:/app/staticfiles:ro
       - media_volume:/app/media:ro
     depends_on:
@@ -90,22 +129,27 @@ volumes:
   media_volume:
 EOF
 
-# 7. Создаем архив
-echo "7. Создание архива..."
-tar -czf complete-offline-project.tar.gz \
-  all-docker-images.tar \
-  docker-compose.offline.yml \
+# 8. Создаем архив
+echo "8. Создание архива..."
+tar -czf offline-project.tar.gz \
+  docker-images.tar \
+  docker-compose-offline.yml \
+  nginx.conf \
   .env \
-  nginx.conf
+  backend/backend/settings.py \
+  generate-cert.sh
 
-echo "8. Проверка..."
-echo "✅ Размер архива: $(du -h complete-offline-project.tar.gz | cut -f1)"
-echo "✅ Образы в архиве:"
-docker images | grep -E "(web_test|python|node|nginx|postgres)"
+echo "9. Проверка..."
+echo "✅ Размер архива: $(du -h offline-project.tar.gz | cut -f1)"
 
 echo ""
 echo "=== ГОТОВО! ==="
-echo "1. Перенесите complete-offline-project.tar.gz на сервер"
-echo "2. Распакуйте: tar -xzf complete-offline-project.tar.gz"
-echo "3. Загрузите образы: docker load -i all-docker-images.tar"
-echo "4. Запустите: docker compose -f docker-compose.offline.yml up -d"
+echo "1. Перенесите offline-project.tar.gz на сервер"
+echo "2. Распакуйте: tar -xzf offline-project.tar.gz"
+echo "3. Загрузите образы: docker load -i docker-images.tar"
+echo "4. Сгенерируйте SSL: ./generate-cert.sh"
+echo "5. Запустите: docker compose -f docker-compose-offline.yml up -d"
+echo ""
+echo "ℹ️  Для копирования на прокси-сервер:"
+echo "    export PROXY_SERVER=user@192.168.168.10"
+echo "    ./generate-cert.sh"

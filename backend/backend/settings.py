@@ -100,18 +100,23 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS settings - разрешаем IP облачного сервера
+# Security settings for HTTPS
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# CORS settings for HTTPS
 CORS_ALLOWED_ORIGINS = [
-    "http://192.168.168.11",
-    "http://192.168.168.10", 
-    "http://192.168.12.180",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:80",
-    "http://127.0.0.1:80",
-    "http://nginx:80",
-    "http://localhost",
-    "http://127.0.0.1",
+    "https://192.168.168.10",
+    "https://192.168.168.11",
+    "https://192.168.12.180",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://192.168.168.10",
+    "https://192.168.168.11", 
+    "https://192.168.12.180",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
