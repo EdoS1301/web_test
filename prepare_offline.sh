@@ -22,6 +22,11 @@ set -e
 
 echo "=== ГЕНЕРАЦИЯ SSL СЕРТИФИКАТОВ ==="
 
+# Спрашиваем прокси-сервер если не указан
+if [ -z "$PROXY_SERVER" ]; then
+    read -p "Введите адрес прокси-сервера [user@ip] (или Enter чтобы пропустить): " PROXY_SERVER
+fi
+
 # Создаем директории проекта
 mkdir -p .ssl/private .ssl/certs
 
@@ -38,13 +43,20 @@ echo "   - .ssl/private/nginx.key"
 # Копируем на прокси-сервер если указан
 if [ -n "$PROXY_SERVER" ]; then
     echo "Копируем сертификаты на прокси-сервер: $PROXY_SERVER"
-    scp .ssl/certs/nginx.crt $PROXY_SERVER:/etc/ssl/certs/nginx.crt
-    scp .ssl/private/nginx.key $PROXY_SERVER:/etc/ssl/private/nginx.key
-    ssh $PROXY_SERVER "chmod 600 /etc/ssl/private/nginx.key && chmod 644 /etc/ssl/certs/nginx.crt"
+    
+    scp .ssl/certs/nginx.crt $PROXY_SERVER:/tmp/nginx.crt
+    scp .ssl/private/nginx.key $PROXY_SERVER:/tmp/nginx.key
+    
+    ssh $PROXY_SERVER "sudo mv /tmp/nginx.crt /etc/ssl/certs/nginx.crt && \
+                       sudo mv /tmp/nginx.key /etc/ssl/private/nginx.key && \
+                       sudo chmod 600 /etc/ssl/private/nginx.key && \
+                       sudo chmod 644 /etc/ssl/certs/nginx.crt"
+    
     echo "✅ Сертификаты скопированы на прокси-сервер"
 else
-    echo "ℹ️  Чтобы скопировать на прокси-сервер, установи переменную:"
-    echo "    export PROXY_SERVER=user@proxy-server-ip"
+    echo "ℹ️  Сертификаты созданы только локально"
+    echo "   Для копирования на прокси установи переменную:"
+    echo "   export PROXY_SERVER=user@192.168.168.10"
 fi
 EOF
 
@@ -150,6 +162,7 @@ echo "3. Загрузите образы: docker load -i docker-images.tar"
 echo "4. Сгенерируйте SSL: ./generate-cert.sh"
 echo "5. Запустите: docker compose -f docker-compose-offline.yml up -d"
 echo ""
-echo "ℹ️  Для копирования на прокси-сервер:"
-echo "    export PROXY_SERVER=user@192.168.168.10"
-echo "    ./generate-cert.sh"
+echo "ℹ️  Для создания сертификатов и их копирования на прокси-сервер:"
+echo "   ./generate-cert.sh"
+echo "Чтобы скопировать nginx-cloud.conf:"
+echo "scp ./nginx-cloud.conf name@ip:/tmp/nginx-cloud.conf"
