@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import logo from '../assets/images/logo.png';
 
-const Header = ({ user, logout }) => {
+const Header = ({ user, logout, onTocToggle, isTocOpen }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
 
-  // Эффект для скрытия хедера при скролле
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -35,7 +35,6 @@ const Header = ({ user, logout }) => {
     navigate('/stats');
   };
 
-  // Закрываем dropdown при клике вне его
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showDropdown && !event.target.closest('.user-profile')) {
@@ -50,64 +49,79 @@ const Header = ({ user, logout }) => {
   }, [showDropdown]);
 
   return (
-    <header className={`header ${isScrolled ? 'scrolled' : ''}`}>
-      <div className="container">
-        <div className="header-content">
-          <div className="header-left">
-            <h1>Курс по противодействию фишингу</h1>
-          </div>
-          
-          <div className="header-right">
-            <div className="user-profile">
-              <button 
-                className="user-profile-btn"
-                onClick={handleProfileClick}
-              >
-                <div className="user-avatar">
-                  {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
-                </div>
-                <div className="user-info">
-                  <div className="user-name">{user.full_name}</div>
-                  <div className="user-email">{user.email}</div>
-                </div>
-                <div className={`dropdown-arrow ${showDropdown ? 'rotated' : ''}`}>▼</div>
-              </button>
-              
-              {showDropdown && (
-                <div className="dropdown-menu">
-                  <div className="dropdown-item user-details">
-                    <strong>{user.full_name}</strong>
-                    <div>{user.department}</div>
-                    <div>{user.organization}</div>
+    <>
+      <header className={`header ${isScrolled ? 'scrolled' : ''}`}>
+        <div className="container">
+          <div className="header-content">
+            <div className="header-left">
+              <div className="logo-container">
+                <img 
+                  src={logo} 
+                  alt="Delo Logo" 
+                  className="header-logo"
+                />
+              </div>
+              <h1 className="header-title">Курс по противодействию фишингу</h1>
+            </div>
+            
+            <div className="header-right">
+              <div className="user-profile">
+                <button 
+                  className="user-profile-btn"
+                  onClick={handleProfileClick}
+                >
+                  <div className="user-avatar">
+                    {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <div className="user-info">
+                    <div className="user-name">{user.full_name}</div>
                     <div className="user-email">{user.email}</div>
                   </div>
-                  <div className="dropdown-divider"></div>
-                  <button 
-                    className="dropdown-item stats-btn"
-                    onClick={handleStatsClick}
-                  >
-                    <span className="stats-icon">📊</span>
-                    <span className="stats-text">Моя статистика</span>
-                  </button>
-                  <div className="dropdown-divider"></div>
-                  <button 
-                    className="dropdown-item logout-btn"
-                    onClick={handleLogout}
-                  >
-                    <span className="logout-text">Выйти и войти в другой аккаунт</span>
-                  </button>
-                </div>
-              )}
+                  <div className={`dropdown-arrow ${showDropdown ? 'rotated' : ''}`}>▼</div>
+                </button>
+                
+                {showDropdown && (
+                  <div className="dropdown-menu">
+                    <div className="dropdown-item user-details">
+                      <strong>{user.full_name}</strong>
+                      <div>{user.department}</div>
+                      <div>{user.organization}</div>
+                      <div className="user-email">{user.email}</div>
+                    </div>
+                    <div className="dropdown-divider"></div>
+                    <button 
+                      className="dropdown-item stats-btn"
+                      onClick={handleStatsClick}
+                    >
+                      <span className="stats-icon">📊</span>
+                      <span className="stats-text">Моя статистика</span>
+                    </button>
+                    <div className="dropdown-divider"></div>
+                    <button 
+                      className="dropdown-item logout-btn"
+                      onClick={handleLogout}
+                    >
+                      <span className="logout-text">Выйти и войти в другой аккаунт</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        <nav className="navigation">
-          <Link to="/main" className="nav-link">Теория</Link>
-          <Link to="/quiz" className="nav-link">Пройти тест</Link>
-        </nav>
+          <nav className="navigation">
+            <Link to="/main" className="nav-link">Теория</Link>
+            <Link to="/quiz" className="nav-link">Пройти тест</Link>
+          </nav>
+        </div>
+      </header>
+
+      {/* Кнопка оглавления - отдельный фиксированный элемент */}
+      <div className={`toc-button ${isTocOpen ? 'open' : ''} ${isScrolled ? 'scrolled' : ''}`} onClick={onTocToggle}>
+        <span className="toc-icon">📚</span>
+        <span className="toc-text">Оглавление</span>
       </div>
-    </header>
+    </>
   );
 };
 

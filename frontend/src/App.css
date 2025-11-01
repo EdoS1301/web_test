@@ -1452,3 +1452,442 @@ body {
     font-size: 0.9rem;
   }
 }
+
+/* Стили для хедера с большим логотипом */
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem; /* Увеличили расстояние между лого и заголовком */
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.header-logo {
+  height: 80px; /* Увеличили в 2 раза (было 40px) */
+  width: auto;
+  object-fit: contain;
+  transition: height 0.3s ease;
+}
+
+.header-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 1024px) {
+  .header-left {
+    gap: 1.5rem;
+  }
+  
+  .header-logo {
+    height: 70px;
+  }
+  
+  .header-title {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-left {
+    gap: 1rem;
+  }
+  
+  .header-logo {
+    height: 60px;
+  }
+  
+  .header-title {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-left {
+    gap: 0.75rem;
+  }
+  
+  .header-logo {
+    height: 50px;
+  }
+  
+  .header-title {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-title {
+    font-size: 0.9rem;
+  }
+  
+  .header-logo {
+    height: 45px;
+  }
+}
+
+/* Эффект при скролле */
+.header.scrolled .header-logo {
+  height: 60px; /* Уменьшаем лого при скролле */
+}
+
+.header.scrolled .header-title {
+  font-size: 1.1rem;
+}
+
+/* Стили для примера сообщения в мессенджере */
+.messenger-example {
+  text-align: center;
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+}
+
+.messenger-image {
+  max-width: 60%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+  transition: transform 0.2s ease;
+}
+
+.messenger-image:hover {
+  transform: scale(1.02);
+}
+
+.image-caption {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+}
+
+.phishing-signs {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid #020202;
+}
+
+.phishing-signs h5 {
+  color: #0a0909;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.phishing-signs ul {
+  text-align: left;
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.phishing-signs li {
+  margin-bottom: 0.5rem;
+  color: #404040;
+  line-height: 1.5;
+}
+
+/* Адаптивность для изображения мессенджера */
+@media (max-width: 768px) {
+  .messenger-example {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+  
+  .phishing-signs {
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .phishing-signs ul {
+    padding-left: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .messenger-example {
+    padding: 0.8rem;
+  }
+  
+  .image-caption {
+    font-size: 0.8rem;
+  }
+  
+  .phishing-signs h5 {
+    font-size: 1rem;
+  }
+}
+
+/* Стили для плавающего оглавления */
+.toc-button {
+  position: fixed;
+  left: 20px;
+  top: 160px; /* Прижата к низу обычного хедера */
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 12px 20px;
+  cursor: pointer;
+  z-index: 1001; /* Выше чем хедер (1000) */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Когда хедер скроллится и уменьшается, кнопка поднимается к верху страницы */
+.toc-button.scrolled {
+  top: 20px; /* Фиксированная позиция у верха когда хедер скрыт */
+}
+
+.toc-button:hover {
+  background: #333;
+  transform: scale(1.05);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.toc-button.open {
+  background: #333;
+  left: 320px; /* Сдвигается вправо когда панель открыта */
+}
+
+.toc-button.open:hover {
+  transform: none;
+}
+
+.toc-icon {
+  font-size: 1.2rem;
+}
+
+.toc-text {
+  white-space: nowrap;
+}
+
+/* Боковая панель оглавления */
+.toc-sidebar {
+  position: fixed;
+  left: -300px;
+  top: 0;
+  width: 300px;
+  height: 100vh;
+  background: white;
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+  z-index: 1002; /* Выше кнопки */
+  transition: left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e5e5e5;
+}
+
+.toc-sidebar.open {
+  left: 0;
+}
+
+.toc-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+}
+
+.toc-header h3 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.toc-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.toc-close:hover {
+  background: #e5e5e5;
+  color: #1a1a1a;
+}
+
+.toc-nav {
+  flex: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.toc-nav-item {
+  width: 100%;
+  padding: 12px 1.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+  color: #404040;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.toc-nav-item:hover {
+  background: #f8f9fa;
+  color: #1a1a1a;
+}
+
+.toc-number {
+  color: #666;
+  font-weight: 600;
+  min-width: 20px;
+  font-size: 0.8rem;
+}
+
+.toc-title {
+  flex: 1;
+}
+
+.toc-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #e5e5e5;
+  background: #f8f9fa;
+}
+
+.toc-quiz-link {
+  display: block;
+  padding: 12px 16px;
+  background: #1a1a1a;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.toc-quiz-link:hover {
+  background: #333;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Оверлей для закрытия */
+.toc-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001; /* Между кнопкой и панелью */
+  backdrop-filter: blur(2px);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .toc-button {
+    left: 10px;
+    top: 140px;
+    padding: 10px 16px;
+    font-size: 0.8rem;
+  }
+  
+  .toc-button.scrolled {
+    top: 15px;
+  }
+  
+  .toc-button.open {
+    left: 260px;
+  }
+  
+  .toc-sidebar {
+    width: 260px;
+    left: -260px;
+  }
+  
+  .toc-header {
+    padding: 1rem;
+  }
+  
+  .toc-nav-item {
+    padding: 10px 1rem;
+  }
+  
+  .toc-footer {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .toc-button {
+    left: 8px;
+    top: 120px;
+    padding: 8px 12px;
+    font-size: 0.7rem;
+  }
+  
+  .toc-button.scrolled {
+    top: 10px;
+  }
+  
+  .toc-button .toc-text {
+    display: none;
+  }
+  
+  .toc-button.open {
+    left: 240px;
+  }
+  
+  .toc-sidebar {
+    width: 240px;
+    left: -240px;
+  }
+  
+  .toc-icon {
+    font-size: 1rem;
+  }
+}
+
+/* Плавная прокрутка для всей страницы */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Подсветка активного раздела при скролле */
+.article-section {
+  scroll-margin-top: 120px;
+}

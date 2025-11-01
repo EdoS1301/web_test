@@ -1,15 +1,75 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from './Header';
+import telegaImage from '../assets/images/telega.png';
 
 const MainPage = ({ user, logout }) => {
+  const [isTocOpen, setIsTocOpen] = useState(false);
+
+  const toggleToc = () => {
+    setIsTocOpen(!isTocOpen);
+  };
+
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setIsTocOpen(false);
+    }
+  };
+
+  const sections = [
+    { id: 'what-is-phishing', title: 'Что такое фишинг?' },
+    { id: 'phishing-principle', title: 'Принцип работы фишинга' },
+    { id: 'email-phishing', title: 'Фишинг: Электронная почта' },
+    { id: 'messenger-phishing', title: 'Фишинг: Мессенджеры' },
+    { id: 'browser-phishing', title: 'Фишинг: Браузер' },
+    { id: 'recognize-phishing', title: 'Как распознать фишинг' },
+    { id: 'protection-methods', title: 'Методы защиты' },
+    { id: 'what-to-do', title: 'Что делать при обнаружении' }
+  ];
+
   return (
     <>
-      <Header user={user} logout={logout} />
+      <Header 
+        user={user} 
+        logout={logout} 
+        onTocToggle={toggleToc}
+        isTocOpen={isTocOpen}
+      />
+      
+      {/* Боковая панель оглавления */}
+      <div className={`toc-sidebar ${isTocOpen ? 'open' : ''}`}>
+        <div className="toc-header">
+          <h3>Оглавление</h3>
+          <button className="toc-close" onClick={toggleToc}>×</button>
+        </div>
+        <nav className="toc-nav">
+          {sections.map((section, index) => (
+            <button
+              key={section.id}
+              className="toc-nav-item"
+              onClick={() => scrollToSection(section.id)}
+            >
+              <span className="toc-number">{index + 1}.</span>
+              <span className="toc-title">{section.title}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="toc-footer">
+          <Link to="/quiz" className="toc-quiz-link">
+            🎯 Пройти тест
+          </Link>
+        </div>
+      </div>
+
+      {/* Оверлей для закрытия по клику вне панели */}
+      {isTocOpen && <div className="toc-overlay" onClick={toggleToc}></div>}
+
       <main className="main">
         <div className="container">
           {/* Что такое фишинг */}
-          <section className="article-section">
+          <section id="what-is-phishing" className="article-section">
             <h2>Что такое фишинг?</h2>
             <p>
               <strong>Фишинг</strong> (от англ. fishing - рыбалка) — это вид кибератаки, при которой злоумышленник 
@@ -41,7 +101,7 @@ const MainPage = ({ user, logout }) => {
           </section>
 
           {/* Принцип фишинга */}
-          <section className="article-section">
+          <section id="phishing-principle" className="article-section">
             <h2>Принцип работы фишинга</h2>
             
             <div className="techniques-grid">
@@ -71,7 +131,7 @@ const MainPage = ({ user, logout }) => {
           </section>
 
           {/* Примеры фишинга: Почта */}
-          <section className="article-section">
+          <section id="email-phishing" className="article-section">
             <h2>Примеры фишинга: Электронная почта</h2>
 
             <p>
@@ -140,7 +200,7 @@ const MainPage = ({ user, logout }) => {
           </section>
 
           {/* Примеры фишинга: Мессенджер */}
-          <section className="article-section">
+          <section id="messenger-phishing" className="article-section">
             <h2>Примеры фишинга: Мессенджеры</h2>
 
             <div className="attack-type">
@@ -151,11 +211,27 @@ const MainPage = ({ user, logout }) => {
               </p>
 
               <div className="example-card">
-                <h4>Пример сообщения:</h4>
-                <div className="message-example">
-                  <p><strong>Начальник в сети • 17 июля</strong></p>
-                  <p>Проект_заработной_платы_на_2025_год.xlsx • 3,9 KB XLSX</p>
-                  <p>"Добрый день, в связи с проведением обязательной ежегодной индексации заработной платы, направляю Вам копию нового расчёта вашего оклада"</p>
+                <h4>Пример фишингового сообщения в мессенджере:</h4>
+                <div className="messenger-example">
+                  <img 
+                    src={telegaImage} 
+                    alt="Пример фишингового сообщения в мессенджере"
+                    className="messenger-image"
+                  />
+                  <p className="image-caption">
+                    Пример фишингового сообщения с подозрительным файлом
+                  </p>
+                </div>
+                
+                <div className="phishing-signs">
+                  <h5>Признаки мошенничества в этом сообщении:</h5>
+                  <ul>
+                    <li>Сообщение приходит от "Начальника" с поддельного аккаунта</li>
+                    <li>Файл имеет подозрительное название "Проект_заработной_платы_на_2025_год.xlsx"</li>
+                    <li>Создается искусственная срочность и важность</li>
+                    <li>Тема заработной платы используется для психологического давления</li>
+                    <li>Файл может содержать вредоносные макросы или скрипты</li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -171,7 +247,7 @@ const MainPage = ({ user, logout }) => {
           </section>
 
           {/* Примеры фишинга: Браузер */}
-          <section className="article-section">
+          <section id="browser-phishing" className="article-section">
             <h2>Примеры фишинга: Браузер</h2>
 
             <p>
@@ -260,7 +336,7 @@ const MainPage = ({ user, logout }) => {
           </section>
 
           {/* Как распознать фишинг */}
-          <section className="article-section">
+          <section id="recognize-phishing" className="article-section">
             <h2>Как распознать фишинг</h2>
 
             <div className="protection-grid">
@@ -311,7 +387,7 @@ const MainPage = ({ user, logout }) => {
           </section>
 
           {/* Методы защиты */}
-          <section className="article-section">
+          <section id="protection-methods" className="article-section">
             <h2>Методы защиты от фишинга</h2>
 
             <div className="card">
@@ -357,7 +433,7 @@ const MainPage = ({ user, logout }) => {
           </section>
 
           {/* Что делать */}
-          <section className="article-section">
+          <section id="what-to-do" className="article-section">
             <h2>Что делать при обнаружении фишинга</h2>
 
             <div className="attack-types">
