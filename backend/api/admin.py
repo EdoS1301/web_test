@@ -10,19 +10,12 @@ class UserProfileInline(admin.StackedInline):
 
 class CustomUserAdmin(UserAdmin):
     inlines = (UserProfileInline,)
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'get_department', 'get_organization')
+    list_display = ('username', 'email', 'is_staff', 'get_organization')
     list_filter = ('is_staff', 'is_superuser', 'is_active')
-    
-    def get_department(self, obj):
-        try:
-            return obj.userprofile.department
-        except UserProfile.DoesNotExist:
-            return "Не указан"
-    get_department.short_description = 'Отдел'
     
     def get_organization(self, obj):
         try:
-            return obj.userprofile.organization
+            return "Государственное учреждение"  # Все пользователи теперь госучреждения
         except UserProfile.DoesNotExist:
             return "Не указана"
     get_organization.short_description = 'Организация'

@@ -1,4 +1,3 @@
-# api/views.py
 import json
 import jwt
 from datetime import datetime, timedelta
@@ -10,8 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.db import IntegrityError
 from django.utils import timezone
-from .models import UserProfile, QuizResult, PDConsentLog
-from django.core.exceptions import ObjectDoesNotExist
+from .models import UserProfile, QuizResult
 
 # Генерация JWT токена
 def generate_token(user):
@@ -33,15 +31,6 @@ def validate_token(token):
     except jwt.InvalidTokenError:
         return None
 
-# Получение IP адреса клиента
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
-
 # Получение пользователя из токена
 def get_user_from_token(request):
     auth_header = request.headers.get('Authorization')
@@ -61,11 +50,6 @@ def get_user_from_token(request):
         return None
 
 @csrf_exempt
-@require_http_methods(["GET"])
-def hello_world(request):
-    return JsonResponse({'message': 'Django API is working!', 'status': 'success'})
-
-@csrf_exempt
 @require_http_methods(["POST"])
 def register(request):
     if request.method == 'POST':
@@ -73,66 +57,41 @@ def register(request):
             data = json.loads(request.body)
             
             # Проверяем обязательные поля
-            required_fields = ['email', 'password', 'full_name', 'department', 'organization']
-            for field in required_fields:
-                if not data.get(field):
-                    return JsonResponse({
-                        'error': f'Необходимо заполнить поле: {field}'
-                    }, status=400)
-            
-            # Проверяем согласие на обработку ПДн
-            if not data.get('privacy_policy'):
+            if not data.get('email') or not data.get('password'):
                 return JsonResponse({
-                    'error': 'Необходимо согласие с Политикой обработки персональных данных'
+                    'error': 'Email и пароль обязательны для заполнения'
                 }, status=400)
             
-            if not data.get('pd_consent'):
+            # Проверяем домен email
+            email = data['email'].lower()
+            if not email.endswith('.gov.ru'):
                 return JsonResponse({
-                    'error': 'Необходимо дать согласие на обработку персональных данных'
+                    'error': 'Регистрация доступна только для email с доменом .gov.ru'
+                }, status=400)
+            
+            # Проверяем длину пароля
+            if len(data['password']) < 8:
+                return JsonResponse({
+                    'error': 'Пароль должен содержать не менее 8 символов'
                 }, status=400)
             
             # Проверяем, существует ли пользователь
-            if User.objects.filter(username=data['email']).exists():
+            if User.objects.filter(username=email).exists():
                 return JsonResponse({
                     'error': 'Пользователь с таким email уже существует'
                 }, status=400)
             
             # Создаем пользователя
             user = User.objects.create_user(
-                username=data['email'],
-                email=data['email'],
-                password=data['password'],
-                first_name=data.get('full_name', '').split(' ')[0] if data.get('full_name') else '',
-                last_name=' '.join(data.get('full_name', '').split(' ')[1:]) if data.get('full_name') else ''
+                username=email,
+                email=email,
+                password=data['password']
             )
             
-            # Создаем профиль пользователя
+            # Создаем профиль пользователя (только с email)
             profile = UserProfile.objects.create(
                 user=user,
-                full_name=data.get('full_name', ''),
-                department=data.get('department', ''),
-                organization=data.get('organization', ''),
-                privacy_policy_accepted=data.get('privacy_policy', False),
-                pd_consent_accepted=data.get('pd_consent', False),
-                consent_accepted_at=timezone.now()
-            )
-            
-            # Логируем согласие на политику конфиденциальности
-            PDConsentLog.objects.create(
-                user=user,
-                consent_type='privacy_policy',
-                accepted=data.get('privacy_policy', False),
-                ip_address=get_client_ip(request),
-                user_agent=request.META.get('HTTP_USER_AGENT', '')
-            )
-            
-            # Логируем согласие на обработку ПДн
-            PDConsentLog.objects.create(
-                user=user,
-                consent_type='pd_consent',
-                accepted=data.get('pd_consent', False),
-                ip_address=get_client_ip(request),
-                user_agent=request.META.get('HTTP_USER_AGENT', '')
+                email=email
             )
             
             # Генерируем токен
@@ -143,12 +102,9 @@ def register(request):
                 'user': {
                     'id': user.id,
                     'email': user.email,
-                    'full_name': profile.full_name,
-                    'department': profile.department,
-                    'organization': profile.organization,
-                    'privacy_policy_accepted': profile.privacy_policy_accepted,
-                    'pd_consent_accepted': profile.pd_consent_accepted,
-                    'consent_accepted_at': profile.consent_accepted_at.isoformat() if profile.consent_accepted_at else None
+                    'full_name': user.email.split('@')[0],  # Используем часть email как имя
+                    'department': 'Государственное учреждение',
+                    'organization': 'Государственное учреждение'
                 },
                 'message': 'Регистрация успешно завершена'
             })
@@ -186,9 +142,7 @@ def login(request):
                     # Если профиль не существует, создаем его
                     profile = UserProfile.objects.create(
                         user=user,
-                        full_name=user.get_full_name() or user.email,
-                        department='Не указан',
-                        organization='Не указана'
+                        email=user.email
                     )
                 
                 # Генерируем токен
@@ -199,12 +153,9 @@ def login(request):
                     'user': {
                         'id': user.id,
                         'email': user.email,
-                        'full_name': profile.full_name,
-                        'department': profile.department,
-                        'organization': profile.organization,
-                        'privacy_policy_accepted': profile.privacy_policy_accepted,
-                        'pd_consent_accepted': profile.pd_consent_accepted,
-                        'consent_accepted_at': profile.consent_accepted_at.isoformat() if profile.consent_accepted_at else None
+                        'full_name': user.email.split('@')[0],
+                        'department': 'Государственное учреждение',
+                        'organization': 'Государственное учреждение'
                     },
                     'message': 'Вход выполнен успешно'
                 })
@@ -325,12 +276,9 @@ def get_user_stats(request):
                 'user': {
                     'id': user.id,
                     'email': user.email,
-                    'full_name': profile.full_name,
-                    'department': profile.department,
-                    'organization': profile.organization,
-                    'privacy_policy_accepted': profile.privacy_policy_accepted,
-                    'pd_consent_accepted': profile.pd_consent_accepted,
-                    'consent_accepted_at': profile.consent_accepted_at.isoformat() if profile.consent_accepted_at else None,
+                    'full_name': user.email.split('@')[0],
+                    'department': 'Государственное учреждение',
+                    'organization': 'Государственное учреждение',
                     'registered_at': user.date_joined.isoformat()
                 },
                 'stats': {

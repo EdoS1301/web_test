@@ -99,16 +99,10 @@ const StatsPage = ({ user, logout }) => {
               <h3>Профиль пользователя</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
                 <div>
-                  <strong>ФИО:</strong> {stats.user.full_name}
-                </div>
-                <div>
-                  <strong>Отдел:</strong> {stats.user.department}
-                </div>
-                <div>
-                  <strong>Организация:</strong> {stats.user.organization}
-                </div>
-                <div>
                   <strong>Email:</strong> {stats.user.email}
+                </div>
+                <div>
+                  <strong>Зарегистрирован:</strong> {formatDate(stats.user.registered_at)}
                 </div>
               </div>
             </div>
@@ -164,51 +158,6 @@ const StatsPage = ({ user, logout }) => {
                   У вас пока нет завершенных попыток теста.
                 </p>
               )}
-            </div>
-
-            {/* Достижения */}
-            <div className="card">
-              <h3>Достижения</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
-                    {stats.stats.best_score >= 90 ? '🏆' : stats.stats.best_score >= 70 ? '⭐' : '📚'}
-                  </div>
-                  <div style={{ fontWeight: '600', color: '#1a1a1a' }}>
-                    {stats.stats.best_score >= 90 ? 'Эксперт' : 
-                     stats.stats.best_score >= 70 ? 'Продвинутый' : 
-                     stats.stats.best_score >= 50 ? 'Новичок' : 'Начинающий'}
-                  </div>
-                  <div style={{ fontSize: '0.9rem', color: '#666' }}>
-                    Уровень знаний
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
-                    {stats.stats.total_attempts >= 10 ? '🔥' : 
-                     stats.stats.total_attempts >= 5 ? '💪' : '🎯'}
-                  </div>
-                  <div style={{ fontWeight: '600', color: '#1a1a1a' }}>
-                    {stats.stats.total_attempts} попыток
-                  </div>
-                  <div style={{ fontSize: '0.9rem', color: '#666' }}>
-                    Активность
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
-                    {stats.stats.best_score >= 80 && stats.stats.total_attempts >= 3 ? '✅' : '📝'}
-                  </div>
-                  <div style={{ fontWeight: '600', color: '#1a1a1a' }}>
-                    {stats.stats.best_score >= 80 && stats.stats.total_attempts >= 3 ? 'Завершено' : 'В процессе'}
-                  </div>
-                  <div style={{ fontSize: '0.9rem', color: '#666' }}>
-                    Прогресс обучения
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Кнопки действий */}

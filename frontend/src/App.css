@@ -1891,3 +1891,129 @@ html {
 .article-section {
   scroll-margin-top: 120px;
 }
+
+/* Cookie Consent Styles */
+.cookie-consent {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid #e5e5e5;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  padding: 1.5rem;
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.cookie-consent-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.cookie-consent-text {
+  flex: 1;
+}
+
+.cookie-consent-text h4 {
+  margin: 0 0 0.5rem 0;
+  color: #1a1a1a;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.cookie-consent-text p {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.cookie-consent-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.cookie-consent-button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  min-width: 120px;
+}
+
+.cookie-consent-button.decline {
+  background: transparent;
+  color: #666;
+  border: 1px solid #e5e5e5;
+}
+
+.cookie-consent-button.decline:hover {
+  background: #f8f9fa;
+  border-color: #d1d5db;
+}
+
+.cookie-consent-button.accept {
+  background: #1a1a1a;
+  color: white;
+  border: 1px solid #1a1a1a;
+}
+
+.cookie-consent-button.accept:hover {
+  background: #333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .cookie-consent {
+    padding: 1rem;
+  }
+  
+  .cookie-consent-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .cookie-consent-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .cookie-consent-button {
+    flex: 1;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .cookie-consent-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .cookie-consent-button {
+    width: 100%;
+  }
+}

@@ -71,11 +71,10 @@ const Header = ({ user, logout, onTocToggle, isTocOpen }) => {
                   onClick={handleProfileClick}
                 >
                   <div className="user-avatar">
-                    {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                    {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
                   </div>
                   <div className="user-info">
-                    <div className="user-name">{user.full_name}</div>
-                    <div className="user-email">{user.email}</div>
+                    <div className="user-name">{user.email}</div>
                   </div>
                   <div className={`dropdown-arrow ${showDropdown ? 'rotated' : ''}`}>▼</div>
                 </button>
@@ -83,9 +82,8 @@ const Header = ({ user, logout, onTocToggle, isTocOpen }) => {
                 {showDropdown && (
                   <div className="dropdown-menu">
                     <div className="dropdown-item user-details">
-                      <strong>{user.full_name}</strong>
-                      <div>{user.department}</div>
-                      <div>{user.organization}</div>
+                      <strong>{user.email}</strong>
+                      <div>Государственное учреждение</div>
                       <div className="user-email">{user.email}</div>
                     </div>
                     <div className="dropdown-divider"></div>

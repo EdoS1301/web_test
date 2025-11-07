@@ -1,4 +1,3 @@
-// components/LoginPage.js
 import React, { useState } from 'react';
 
 const LoginPage = () => {
@@ -6,21 +5,36 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    full_name: '',
-    department: '',
-    organization: '',
-    privacy_policy: false,
-    pd_consent: false // НОВОЕ ПОЛЕ ДЛЯ ЯВНОГО СОГЛАСИЯ
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     });
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return 'Некорректный формат email';
+    }
+    
+    if (!email.toLowerCase().endsWith('.gov.ru')) {
+      return 'Регистрация доступна только для email с доменом .gov.ru';
+    }
+    
+    return null;
+  };
+
+  const validatePassword = (password) => {
+    if (password.length < 8) {
+      return 'Пароль должен содержать не менее 8 символов';
+    }
+    return null;
   };
 
   const handleSubmit = async (e) => {
@@ -28,15 +42,19 @@ const LoginPage = () => {
     setLoading(true);
     setError('');
 
-    // ПРОВЕРКА СОГЛАСИЯ ДЛЯ РЕГИСТРАЦИИ
+    // Валидация email
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      setError(emailError);
+      setLoading(false);
+      return;
+    }
+
+    // Валидация пароля (только для регистрации)
     if (!isLogin) {
-      if (!formData.privacy_policy) {
-        setError('Необходимо согласие на обработку персональных данных');
-        setLoading(false);
-        return;
-      }
-      if (!formData.pd_consent) {
-        setError('Необходимо дать согласие на обработку персональных данных');
+      const passwordError = validatePassword(formData.password);
+      if (passwordError) {
+        setError(passwordError);
         setLoading(false);
         return;
       }
@@ -77,6 +95,7 @@ const LoginPage = () => {
         <div className="login-header">
           <h1>Противодействие фишингу</h1>
           <p>Пройти обучение и тестирование по кибербезопасности</p>
+
         </div>
 
         <div className="login-tabs">
@@ -106,7 +125,7 @@ const LoginPage = () => {
           )}
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email {!isLogin && <span style={{color: '#dc2626'}}>*</span>}</label>
             <input
               id="email"
               type="email"
@@ -114,117 +133,18 @@ const LoginPage = () => {
               value={formData.email}
               onChange={handleChange}
               required
-              placeholder="your.email@company.com"
+              placeholder="your.email@gov.ru"
               disabled={loading}
             />
+            {!isLogin && (
+              <div style={{fontSize: '0.8rem', color: '#666', marginTop: '0.3rem'}}>
+                Только для email с доменом @adygheya.gov.ru (например: user@adygheya.gov.ru)
+              </div>
+            )}
           </div>
 
-          {!isLogin && (
-            <>
-              <div className="form-group">
-                <label htmlFor="full_name">ФИО</label>
-                <input
-                  id="full_name"
-                  type="text"
-                  name="full_name"
-                  value={formData.full_name}
-                  onChange={handleChange}
-                  required
-                  placeholder="Иванов Иван Иванович"
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="department">Отдел</label>
-                <input
-                  id="department"
-                  type="text"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  required
-                  placeholder="Отдел IT"
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="organization">Организация</label>
-                <input
-                  id="organization"
-                  type="text"
-                  name="organization"
-                  value={formData.organization}
-                  onChange={handleChange}
-                  required
-                  placeholder="Название компании"
-                  disabled={loading}
-                />
-              </div>
-
-              {/* СТАРОЕ СОГЛАСИЕ НА ПОЛИТИКУ */}
-              <div className="form-group checkbox-group">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="privacy_policy"
-                    checked={formData.privacy_policy}
-                    onChange={handleChange}
-                    disabled={loading}
-                    required
-                  />
-                  <span className="checkmark"></span>
-                  <span>
-                    Я ознакомлен(а) и согласен(на) с{' '}
-                    <a 
-                      href="/privacy-policy" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      style={{
-                        color: '#1a1a1a', 
-                        textDecoration: 'underline',
-                        fontWeight: '500'
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (loading) {
-                          e.preventDefault();
-                        }
-                      }}
-                    >
-                      Политикой обработки персональных данных
-                    </a>
-                  </span>
-                </label>
-              </div>
-
-              {/* НОВОЕ ЯВНОЕ СОГЛАСИЕ НА ОБРАБОТКУ ПДн */}
-              <div className="form-group checkbox-group">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="pd_consent"
-                    checked={formData.pd_consent}
-                    onChange={handleChange}
-                    disabled={loading}
-                    required
-                  />
-                  <span className="checkmark"></span>
-                  <span>
-                    <strong>Даю согласие на обработку моих персональных данных</strong><br />
-                    <span style={{fontSize: '0.85rem', color: '#666'}}>
-                      в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных» 
-                      для целей регистрации и прохождения обучения в системе
-                    </span>
-                  </span>
-                </label>
-              </div>
-            </>
-          )}
-
           <div className="form-group">
-            <label htmlFor="password">Пароль</label>
+            <label htmlFor="password">Пароль {!isLogin && <span style={{color: '#dc2626'}}>*</span>}</label>
             <input
               id="password"
               type="password"
@@ -232,9 +152,14 @@ const LoginPage = () => {
               value={formData.password}
               onChange={handleChange}
               required
-              placeholder="Введите пароль"
+              placeholder={isLogin ? "Введите пароль" : "Придумайте пароль"}
               disabled={loading}
             />
+            {!isLogin && (
+              <div style={{fontSize: '0.8rem', color: '#666', marginTop: '0.3rem'}}>
+                Пароль должен содержать не менее 8 символов
+              </div>
+            )}
           </div>
 
           <button 
