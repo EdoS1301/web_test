@@ -169,7 +169,7 @@ const StatsPage = ({ user, logout }) => {
                 Пройти тест еще раз
               </button>
               <button 
-                onClick={() => window.location.href = '/main'}
+                onClick={() => window.location.href = '/phish-course'}
                 className="cta-button"
                 style={{ background: 'transparent', color: '#1a1a1a', border: '1px solid #1a1a1a' }}
               >

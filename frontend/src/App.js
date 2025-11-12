@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import './App.css';
 import LoginPage from './components/LoginPage';
 import MainPage from './components/MainPage';
+import PhishCourse from './components/PhishCourse';
 import QuizPage from './components/QuizPage';
 import StatsPage from './components/StatsPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
@@ -56,6 +57,10 @@ function App() {
           <Route 
             path="/main" 
             element={user ? <MainPage user={user} logout={logout} /> : <Navigate to="/" replace />} 
+          />
+          <Route 
+            path="/phish-course" 
+            element={user ? <PhishCourse user={user} logout={logout} /> : <Navigate to="/" replace />} 
           />
           <Route 
             path="/quiz" 
