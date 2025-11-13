@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 import './App.css';
 import LoginPage from './components/LoginPage';
 import MainPage from './components/MainPage';
@@ -12,6 +13,7 @@ import PhishingExample from './components/PhishingExample';
 import CookieConsent from './components/CookieConsent';
 import CryptoCourse from './components/CryptoCourse';
 import CryptoQuiz from './components/CryptoQuiz';
+import NotFoundPage from './components/NotFoundPage';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -49,55 +51,148 @@ function App() {
   }
 
   return (
-    <Router>
-      <div className="app">
-        <Routes>
-          <Route 
-            path="/" 
-            element={user ? <Navigate to="/main" replace /> : <LoginPage />} 
-          />
-          <Route 
-            path="/main" 
-            element={user ? <MainPage user={user} logout={logout} /> : <Navigate to="/" replace />} 
-          />
-          <Route 
-            path="/phish-course" 
-            element={user ? <PhishCourse user={user} logout={logout} /> : <Navigate to="/" replace />} 
-          />
-          <Route 
-            path="/quiz" 
-            element={user ? <QuizPage user={user} logout={logout} /> : <Navigate to="/" replace />} 
-          />
-          <Route 
-            path="/stats" 
-            element={user ? <StatsPage user={user} logout={logout} /> : <Navigate to="/" replace />} 
-          />
-          <Route 
-            path="/privacy-policy" 
-            element={<PrivacyPolicy user={user} logout={logout} />} 
-          />
-          <Route 
-            path="/consent-form" 
-            element={<ConsentForm user={user} logout={logout} />} 
-          />
-          <Route 
-            path="/phishing-example" 
-            element={<PhishingExample />} 
-          />
-          <Route 
-            path="/crypto-course" 
-            element={user ? <CryptoCourse user={user} logout={logout} /> : <Navigate to="/" replace />} 
-          />
-          <Route 
-            path="/crypto-quiz" 
-            element={user ? <CryptoQuiz user={user} logout={logout} /> : <Navigate to="/" replace />} 
-          />
-        </Routes>
-        
-        {/* Cookie Consent Banner */}
-        <CookieConsent />
-      </div>
-    </Router>
+    <HelmetProvider>
+      <Router>
+        <div className="app">
+          {/* Базовые мета-теги для всех страниц */}
+          <Helmet>
+            <link rel="icon" href="/images/logo.png" type="image/png" />
+            <link rel="shortcut icon" href="/images/logo.png" type="image/png" />
+            <link rel="apple-touch-icon" href="/images/logo.png" />
+            <meta name="theme-color" content="#000000" />
+          </Helmet>
+
+          <Routes>
+            <Route 
+              path="/" 
+              element={
+                <>
+                  <Helmet>
+                    <title>Вход | Курсы по кибербезопасности</title>
+                  </Helmet>
+                  {user ? <Navigate to="/main" replace /> : <LoginPage />}
+                </>
+              } 
+            />
+            <Route 
+              path="/main" 
+              element={
+                <>
+                  <Helmet>
+                    <title>Главная | Курсы по кибербезопасности</title>
+                  </Helmet>
+                  {user ? <MainPage user={user} logout={logout} /> : <Navigate to="/" replace />}
+                </>
+              } 
+            />
+            <Route 
+              path="/phish-course" 
+              element={
+                <>
+                  <Helmet>
+                    <title>Противодействие фишингу | Курсы по кибербезопасности</title>
+                  </Helmet>
+                  {user ? <PhishCourse user={user} logout={logout} /> : <Navigate to="/" replace />}
+                </>
+              } 
+            />
+            <Route 
+              path="/quiz" 
+              element={
+                <>
+                  <Helmet>
+                    <title>Тест по фишингу | Курсы по кибербезопасности</title>
+                  </Helmet>
+                  {user ? <QuizPage user={user} logout={logout} /> : <Navigate to="/" replace />}
+                </>
+              } 
+            />
+            <Route 
+              path="/stats" 
+              element={
+                <>
+                  <Helmet>
+                    <title>Моя статистика | Курсы по кибербезопасности</title>
+                  </Helmet>
+                  {user ? <StatsPage user={user} logout={logout} /> : <Navigate to="/" replace />}
+                </>
+              } 
+            />
+            <Route 
+              path="/privacy-policy" 
+              element={
+                <>
+                  <Helmet>
+                    <title>Политика конфиденциальности | Курсы по кибербезопасности</title>
+                  </Helmet>
+                  <PrivacyPolicy user={user} logout={logout} />
+                </>
+              } 
+            />
+            <Route 
+              path="/consent-form" 
+              element={
+                <>
+                  <Helmet>
+                    <title>Согласие на обработку данных | Курсы по кибербезопасности</title>
+                  </Helmet>
+                  <ConsentForm user={user} logout={logout} />
+                </>
+              } 
+            />
+            <Route 
+              path="/phishing-example" 
+              element={
+                <>
+                  <Helmet>
+                    <title>Пример фишинга | Курсы по кибербезопасности</title>
+                  </Helmet>
+                  <PhishingExample />
+                </>
+              } 
+            />
+            <Route 
+              path="/crypto-course" 
+              element={
+                <>
+                  <Helmet>
+                    <title>Криптографическая защита | Курсы по кибербезопасности</title>
+                  </Helmet>
+                  {user ? <CryptoCourse user={user} logout={logout} /> : <Navigate to="/" replace />}
+                </>
+              } 
+            />
+            <Route 
+              path="/crypto-quiz" 
+              element={
+                <>
+                  <Helmet>
+                    <title>Тест по криптографии | Курсы по кибербезопасности</title>
+                  </Helmet>
+                  {user ? <CryptoQuiz user={user} logout={logout} /> : <Navigate to="/" replace />}
+                </>
+              } 
+            />
+            
+            {/* Маршрут 404 - должен быть последним */}
+            <Route 
+              path="*" 
+              element={
+                <>
+                  <Helmet>
+                    <title>Страница не найдена | Курсы по кибербезопасности</title>
+                  </Helmet>
+                  <NotFoundPage />
+                </>
+              } 
+            />
+          </Routes>
+          
+          {/* Cookie Consent Banner */}
+          <CookieConsent />
+        </div>
+      </Router>
+    </HelmetProvider>
   );
 }
 

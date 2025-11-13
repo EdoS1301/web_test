@@ -1,0 +1,167 @@
+.not-found-page {
+  position: relative;
+  height: 100vh;
+  background: #050505;
+  overflow: hidden;
+  font-family: "Montserrat", sans-serif;
+  color: #fff;
+  font-size: 18px;
+}
+
+.cat-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 1920px;
+  margin: 0 auto;
+  animation: catAnim 1.5s ease forwards;
+}
+
+.cat-image {
+  display: flex;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+@keyframes catAnim {
+  0% {
+    transform: translateY(50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.okak-text {
+  position: absolute;
+  bottom: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 900;
+  font-size: 115px;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.error-404 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 750px;
+  font-weight: 900;
+  transform: translate(-50%, 800px);
+  animation: errorAnim 1.5s ease forwards;
+  opacity: 0.1;
+  color: #1a1a1a;
+  text-shadow: none;
+}
+
+@keyframes errorAnim {
+  100% {
+    transform: translate(-50%, -400px);
+  }
+}
+
+.not-found-content {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 10;
+  max-width: 600px;
+  padding: 0 20px;
+}
+
+.not-found-content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.not-found-content p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.8;
+  line-height: 1.6;
+  color: #cccccc;
+}
+
+.back-home-btn {
+  display: inline-block;
+  padding: 1rem 2.5rem;
+  background: #1a1a1a;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: 1px solid #1a1a1a;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.back-home-btn:hover {
+  background: white;
+  color: #1a1a1a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+  .error-404 {
+    font-size: 600px;
+  }
+  
+  .okak-text {
+    font-size: 90px;
+    bottom: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .error-404 {
+    font-size: 400px;
+  }
+  
+  .okak-text {
+    font-size: 60px;
+    bottom: 100px;
+  }
+  
+  .not-found-content h2 {
+    font-size: 2rem;
+  }
+  
+  .not-found-content p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .error-404 {
+    font-size: 250px;
+  }
+  
+  .okak-text {
+    font-size: 40px;
+    bottom: 80px;
+  }
+  
+  .not-found-content {
+    top: 15%;
+  }
+  
+  .not-found-content h2 {
+    font-size: 1.5rem;
+  }
+  
+  .back-home-btn {
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+  }
+}

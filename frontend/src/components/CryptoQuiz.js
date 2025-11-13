@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from './Header';
+import { downloadCertificate } from './CryptoCertificate';
 
 const CryptoQuiz = ({ user, logout }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -54,33 +55,33 @@ const CryptoQuiz = ({ user, logout }) => {
     loadQuestions();
   }, []);
 
-    const handleSaveResult = async (score, totalQuestions, percentage) => {
+  const handleSaveResult = async (score, totalQuestions, percentage) => {
     try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('/api/quiz/save/', {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/quiz/save/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-            score: score,
-            total_questions: totalQuestions,
-            percentage: percentage,
-            course: 'crypto'  // Добавляем курс
+          score: score,
+          total_questions: totalQuestions,
+          percentage: percentage,
+          course: 'crypto'
         }),
-        });
+      });
 
-        if (response.ok) {
+      if (response.ok) {
         const data = await response.json();
         console.log('Результат сохранен:', data);
-        } else {
+      } else {
         console.error('Ошибка сохранения результата');
-        }
+      }
     } catch (error) {
-        console.error('Ошибка сохранения результата:', error);
+      console.error('Ошибка сохранения результата:', error);
     }
-    };
+  };
 
   const handleAnswerClick = (optionIndex) => {
     const currentQ = questions[currentQuestion];
@@ -243,6 +244,17 @@ const CryptoQuiz = ({ user, logout }) => {
 
   if (showScore) {
     const percentage = Math.round((score / questions.length) * 100);
+
+    // Функция для скачивания заключения
+    const handleDownloadCertificate = () => {
+      const userData = JSON.parse(localStorage.getItem('user'));
+      const courseStats = {
+        bestScore: percentage,
+        totalAttempts: 1
+      };
+      downloadCertificate(userData, courseStats);
+    };
+
     return (
       <>
         <Header user={user} logout={logout} />
@@ -289,6 +301,114 @@ const CryptoQuiz = ({ user, logout }) => {
                     <p>Рекомендуем изучить материалы еще раз.</p>
                   </div>
                 )}
+
+                {percentage >= 70 && (
+                    <div style={{ 
+                        background: 'linear-gradient(135deg, #e8f5e8 0%, #f0f8ff 100%)',
+                        padding: '2.5rem',
+                        borderRadius: '15px',
+                        border: '2px solid #4caf50',
+                        margin: '2rem 0',
+                        textAlign: 'center',
+                        boxShadow: '0 8px 25px rgba(76, 175, 80, 0.15)',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}>
+                        {/* Декоративные элементы */}
+                        <div style={{
+                        position: 'absolute',
+                        top: '-50px',
+                        right: '-50px',
+                        width: '150px',
+                        height: '150px',
+                        background: 'rgba(76, 175, 80, 0.1)',
+                        borderRadius: '50%'
+                        }}></div>
+                        
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                        <div style={{
+                            background: '#4caf50',
+                            color: 'white',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '25px',
+                            display: 'inline-block',
+                            marginBottom: '1rem',
+                            fontSize: '0.9rem',
+                            fontWeight: 'bold'
+                        }}>
+                            🎓 СЕРТИФИКАТ
+                        </div>
+
+                        <h3 style={{ 
+                            color: '#2e7d32', 
+                            marginBottom: '1rem',
+                            fontSize: '1.5rem'
+                        }}>
+                            Поздравляем с успешным прохождением!
+                        </h3>
+
+                        <div style={{
+                            background: 'white',
+                            padding: '1.5rem',
+                            borderRadius: '10px',
+                            margin: '1.5rem 0',
+                            border: '1px solid #e0e0e0'
+                        }}>
+                            <p style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>
+                            <strong>Ваш результат:</strong> <span style={{ color: '#4caf50', fontWeight: 'bold' }}>{percentage}%</span>
+                            </p>
+                            <p style={{ margin: '0', color: '#666' }}>
+                            Вы успешно прошли тестирование по криптографической защите информации
+                            </p>
+                        </div>
+
+                        <p style={{ 
+                            fontSize: '0.95rem', 
+                            color: '#666',
+                            marginBottom: '1.5rem',
+                            lineHeight: '1.5'
+                        }}>
+                            Скачайте официальный сертификат, подтверждающий вашу готовность 
+                            к работе со средствами криптографической защиты информации.
+                        </p>
+                        
+                        <button 
+                            onClick={handleDownloadCertificate}
+                            className="cta-button"
+                            style={{
+                            background: 'linear-gradient(135deg, #1a1a1a 0%, #333 100%)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '1rem 2rem',
+                            fontSize: '1.1rem',
+                            fontWeight: '600',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)'
+                            }}
+                            onMouseOver={(e) => {
+                            e.target.style.background = 'linear-gradient(135deg, #333 0%, #555 100%)';
+                            e.target.style.transform = 'translateY(-2px)';
+                            }}
+                            onMouseOut={(e) => {
+                            e.target.style.background = 'linear-gradient(135deg, #1a1a1a 0%, #333 100%)';
+                            e.target.style.transform = 'translateY(0)';
+                            }}
+                        >
+                            📥 Скачать сертификат (PDF)
+                        </button>
+                        
+                        <p style={{ 
+                            fontSize: '0.85rem', 
+                            color: '#888', 
+                            marginTop: '1rem'
+                        }}>
+                            Сертификат будет скачан в формате PDF
+                        </p>
+                        </div>
+                    </div>
+                    )}
 
                 <div className="answers-review">
                   <h4>Разбор ответов:</h4>
@@ -402,16 +522,41 @@ const CryptoQuiz = ({ user, logout }) => {
                   ))}
                 </div>
 
+                {/* Кнопка подтверждения для множественного выбора */}
                 {isMultipleChoice && (
-                <div style={{display: 'flex', justifyContent: 'center', marginTop: '2rem'}}>
+                  <div style={{display: 'flex', justifyContent: 'center', marginTop: '2rem'}}>
                     <button 
-                    onClick={handleMultipleChoiceSubmit}
-                    className="multiple-choice-submit"
-                    disabled={selectedOptions.length === 0}
+                      onClick={handleMultipleChoiceSubmit}
+                      className="cta-button"
+                      disabled={selectedOptions.length === 0}
+                      style={{
+                        background: selectedOptions.length === 0 ? '#e5e5e5' : '#1a1a1a',
+                        color: selectedOptions.length === 0 ? '#999' : 'white',
+                        cursor: selectedOptions.length === 0 ? 'not-allowed' : 'pointer',
+                        border: '1px solid #1a1a1a',
+                        padding: '1rem 2.5rem',
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        fontSize: '1.1rem',
+                        transition: 'all 0.2s ease',
+                        boxShadow: selectedOptions.length === 0 ? 'none' : '0 4px 15px rgba(0, 0, 0, 0.2)'
+                      }}
+                      onMouseOver={(e) => {
+                        if (selectedOptions.length > 0) {
+                          e.target.style.background = 'white';
+                          e.target.style.color = '#1a1a1a';
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (selectedOptions.length > 0) {
+                          e.target.style.background = '#1a1a1a';
+                          e.target.style.color = 'white';
+                        }
+                      }}
                     >
-                    Подтвердить выбор ({selectedOptions.length} выбрано)
+                      Подтвердить выбор ({selectedOptions.length} выбрано)
                     </button>
-                </div>
+                  </div>
                 )}
 
                 {/* Кнопка "Назад" для перехода к предыдущему вопросу */}

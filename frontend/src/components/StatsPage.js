@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Header from './Header';
+import CryptoCertificate from './CryptoCertificate';
 
 const StatsPage = ({ user, logout }) => {
   const [stats, setStats] = useState(null);
@@ -156,6 +157,14 @@ const StatsPage = ({ user, logout }) => {
                 </div>
               </div>
             </div>
+
+            {/* Заключение по криптографии */}
+            {cryptoStats.totalAttempts > 0 && (
+              <CryptoCertificate 
+                user={stats.user} 
+                courseStats={cryptoStats}
+              />
+            )}
 
             {/* Статистика по курсу фишинга */}
             <div className="card">

@@ -2428,68 +2428,29 @@ html {
   color: #333;
 }
 
-/* Стили для кнопок вариантов ответов */
-.option-button {
-  padding: 1.5rem;
-  background: white;
-  border: 1px solid #e5e5e5;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #404040;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  width: 100%;
-}
-
-.option-button:hover {
-  background: #f8f9fa;
-  border-color: #d1d5db;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
+/* Стили для множественного выбора в тестах */
 .option-button.selected {
   background: #e3f2fd !important;
   border-color: #2196f3 !important;
   color: #1565c0;
 }
 
-/* Стили для кнопки подтверждения множественного выбора */
-.multiple-choice-submit {
-  display: inline-block;
-  padding: 1rem 2.5rem;
-  background: #1a1a1a;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: 600;
-  margin-top: 1.5rem;
-  transition: all 0.2s ease;
-  border: 1px solid #1a1a1a;
-  cursor: pointer;
-  font-size: 1.1rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+.option-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.multiple-choice-submit:hover:not(:disabled) {
-  background: white;
-  color: #1a1a1a;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+/* Адаптивность для длинных текстов в вариантах ответов */
+.option-button {
+  word-wrap: break-word;
+  white-space: normal;
+  text-align: left;
+  line-height: 1.4;
 }
 
-.multiple-choice-submit:disabled {
-  background: #e5e5e5;
-  color: #999;
-  border-color: #e5e5e5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Индикатор множественного выбора */
+/* Индикатор множественного выбора 
 .multiple-choice-indicator {
   background: #e3f2fd;
   padding: 1rem;
@@ -2498,4 +2459,68 @@ html {
   border: 1px solid #2196f3;
   color: #1565c0;
   font-weight: 500;
+}
+
+/* Стили для кнопки "Наверх" */
+.scroll-top-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  background: #1a1a1a;
+  color: white;
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.scroll-top-button.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.scroll-top-button:hover {
+  background: white;
+  color: #1a1a1a;
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.scroll-top-button:active {
+  transform: translateY(-2px);
+}
+
+/* Адаптивность для кнопки "Наверх" */
+@media (max-width: 768px) {
+  .scroll-top-button {
+    bottom: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+  }
+}
+
+@media (max-width: 480px) {
+  .scroll-top-button {
+    bottom: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .scroll-top-button svg {
+    width: 20px;
+    height: 20px;
+  }
 }
