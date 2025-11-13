@@ -202,9 +202,15 @@ def save_quiz_result(request):
                     'error': 'Процент выполнения должен быть от 0 до 100'
                 }, status=400)
             
+            # Определяем курс (по умолчанию 'phishing' для обратной совместимости)
+            course = data.get('course', 'phishing')
+            if course not in ['phishing', 'crypto']:
+                course = 'phishing'
+            
             # Сохраняем результат теста
             quiz_result = QuizResult.objects.create(
                 user=user,
+                course=course,
                 score=data['score'],
                 total_questions=data['total_questions'],
                 percentage=data['percentage']
@@ -212,6 +218,7 @@ def save_quiz_result(request):
             
             return JsonResponse({
                 'id': str(quiz_result.id),
+                'course': quiz_result.course,
                 'score': quiz_result.score,
                 'total_questions': quiz_result.total_questions,
                 'percentage': quiz_result.percentage,
@@ -247,24 +254,41 @@ def get_user_stats(request):
             # Получаем все результаты тестов пользователя
             quiz_results = QuizResult.objects.filter(user=user).order_by('-completed_at')
             
-            # Рассчитываем статистику
+            # Рассчитываем общую статистику
             total_attempts = quiz_results.count()
-            best_score = 0
-            last_attempt = None
             
+            # Рассчитываем статистику по курсам
+            phishing_results = quiz_results.filter(course='phishing')
+            crypto_results = quiz_results.filter(course='crypto')
+            
+            # Статистика по фишингу
+            phishing_best_score = 0
+            phishing_total_attempts = phishing_results.count()
+            phishing_last_attempt = None
+            
+            for result in phishing_results:
+                if result.percentage > phishing_best_score:
+                    phishing_best_score = result.percentage
+                if not phishing_last_attempt or result.completed_at > phishing_last_attempt:
+                    phishing_last_attempt = result.completed_at
+            
+            # Статистика по криптографии
+            crypto_best_score = 0
+            crypto_total_attempts = crypto_results.count()
+            crypto_last_attempt = None
+            
+            for result in crypto_results:
+                if result.percentage > crypto_best_score:
+                    crypto_best_score = result.percentage
+                if not crypto_last_attempt or result.completed_at > crypto_last_attempt:
+                    crypto_last_attempt = result.completed_at
+            
+            # Подготавливаем историю попыток с информацией о курсе
             attempts_history = []
             
             for result in quiz_results:
-                # Лучший результат
-                if result.percentage > best_score:
-                    best_score = result.percentage
-                
-                # Последняя попытка
-                if not last_attempt or result.completed_at > last_attempt:
-                    last_attempt = result.completed_at
-                
-                # История попыток
                 attempts_history.append({
+                    'course': result.course,
                     'score': result.score,
                     'total_questions': result.total_questions,
                     'percentage': result.percentage,
@@ -282,9 +306,17 @@ def get_user_stats(request):
                     'registered_at': user.date_joined.isoformat()
                 },
                 'stats': {
-                    'best_score': round(best_score, 1),
                     'total_attempts': total_attempts,
-                    'last_attempt': last_attempt.isoformat() if last_attempt else None,
+                    'phishing': {
+                        'best_score': round(phishing_best_score, 1),
+                        'total_attempts': phishing_total_attempts,
+                        'last_attempt': phishing_last_attempt.isoformat() if phishing_last_attempt else None
+                    },
+                    'crypto': {
+                        'best_score': round(crypto_best_score, 1),
+                        'total_attempts': crypto_total_attempts,
+                        'last_attempt': crypto_last_attempt.isoformat() if crypto_last_attempt else None
+                    },
                     'attempts_history': attempts_history
                 }
             }

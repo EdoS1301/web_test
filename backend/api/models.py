@@ -15,12 +15,18 @@ class UserProfile(models.Model):
         return f"{self.email}"
 
 class QuizResult(models.Model):
+    COURSE_CHOICES = [
+        ('phishing', 'Противодействие фишингу'),
+        ('crypto', 'Криптографическая защита информации'),
+    ]
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quiz_results')
+    course = models.CharField(max_length=20, choices=COURSE_CHOICES, default='phishing')
     score = models.IntegerField()
     total_questions = models.IntegerField()
     percentage = models.FloatField()
     completed_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        ordering = ['-percentage', 'completed_at']
+        ordering = ['-completed_at']

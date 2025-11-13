@@ -10,6 +10,8 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import ConsentForm from './components/ConsentForm';
 import PhishingExample from './components/PhishingExample';
 import CookieConsent from './components/CookieConsent';
+import CryptoCourse from './components/CryptoCourse';
+import CryptoQuiz from './components/CryptoQuiz';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -81,6 +83,14 @@ function App() {
           <Route 
             path="/phishing-example" 
             element={<PhishingExample />} 
+          />
+          <Route 
+            path="/crypto-course" 
+            element={user ? <CryptoCourse user={user} logout={logout} /> : <Navigate to="/" replace />} 
+          />
+          <Route 
+            path="/crypto-quiz" 
+            element={user ? <CryptoQuiz user={user} logout={logout} /> : <Navigate to="/" replace />} 
           />
         </Routes>
         
